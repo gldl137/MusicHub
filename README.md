@@ -35,18 +35,70 @@
 |---|---|
 | ![播放详情](项目介绍/7.png) | ![榜单](项目介绍/8.png) |
 
-## 🚀 快速开始
+## 🚀 快速开始（Docker）
+
+**镜像地址（Docker Hub）**：[`gldl137/musichub`](https://hub.docker.com/r/gldl137/musichub)
+`beta` 为最新滚动构建；`1.0.x` 为稳定版本 tag，可按需固定。
+
+### 方式一：直接使用镜像（推荐，无需克隆源码）
+
+新建一个空目录，创建 `docker-compose.yml`：
+
+```yaml
+services:
+  musichub:
+    image: gldl137/musichub:beta
+    container_name: musichub
+    ports:
+      - "8000:8000"          # 左边端口可自行修改，如 "8080:8000"
+    volumes:
+      - ./data:/app/data         # 数据目录（数据库、插件配置、封面缓存、日志等）
+      - ./downloads:/app/downloads   # 下载目录
+      - ./playlists:/app/playlists   # 播放列表目录（M3U）
+      - ./music:/app/music           # 本地音乐目录（本地曲库扫描）
+    environment:
+      - PUID=1000                # 与宿主机用户对齐，避免挂载目录权限问题
+      - PGID=1000
+      - TZ=Asia/Shanghai
+    restart: unless-stopped
+```
+
+```bash
+docker compose up -d
+```
+
+或使用 `docker run` 一行启动：
+
+```bash
+docker run -d --name musichub -p 8000:8000 \
+  -v ./data:/app/data -v ./downloads:/app/downloads \
+  -v ./playlists:/app/playlists -v ./music:/app/music \
+  -e PUID=1000 -e PGID=1000 -e TZ=Asia/Shanghai \
+  --restart unless-stopped gldl137/musichub:beta
+```
+
+### 方式二：源码构建
 
 ```bash
 git clone https://github.com/gldl137/MusicHub.git
 cd MusicHub
-docker compose up -d
+docker compose up -d --build
 ```
+
+### 启动后
 
 浏览器访问 <http://localhost:8000>
 
 - 默认管理员：`admin` / `admin`（**登录后请立即修改密码**）
-- 数据（数据库、插件配置、封面缓存、收藏等）全部落在 `app/data/`，升级镜像不丢数据
+- 所有个人数据（数据库、插件配置、封面缓存、收藏等）都在挂载的 `data/` 目录，升级/重建容器不丢数据
+
+### 升级
+
+```bash
+docker pull gldl137/musichub:beta
+docker compose up -d     # 重建容器，数据保留
+```
+
 
 ### 连接第三方客户端（OpenSubsonic / Subsonic）
 
