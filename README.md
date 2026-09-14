@@ -2,9 +2,14 @@
 
 自托管音乐流媒体服务器：兼容 **MusicFree 插件生态**，同时提供 **OpenSubsonic** 服务端，自带一个好看的 Web 播放器。Docker 一键部署，你的音乐、歌单、榜单、电台全部聚合在一个界面里。
 
+> 本项目在 **[MusicFree](https://github.com/maotoumao/MusicFree)** 与 **[落雪音乐（lx-music-desktop）](https://github.com/lyswhut/lx-music-desktop)** 的基础上改编而来：MusicFree 的插件协议与运行引擎、落雪的内置音源 SDK 与自定义音源运行时，都在 MusicHub 后端得以复用与延伸 —— 衷心感谢这两个优秀的开源项目。
+
 ## ✨ 特性
 
 - **插件生态**：100% 兼容 [MusicFree](https://github.com/maotoumao/MusicFree) 插件，插件热加载（放入目录即生效，无需重启）
+- **双音源体系**：
+  - MusicFree 插件音源（社区插件自由扩展）
+  - 内置 **落雪音乐（lx-music-desktop）音源 SDK**（酷我 / 酷狗 / QQ / 网易 / 咪咕 的榜单、热门歌单、搜索），并兼容落雪**自定义音源**脚本运行时
 - **网络音乐聚合**：多音源搜索、榜单浏览（酷狗 / QQ / 酷我 / 酷狗TOP500 / MF 排行榜等）、歌单订阅（榜单快照 / 实时动态歌单）
 - **本地音乐库**：自动扫描本地目录，按 单曲 / 歌手 / 专辑 / 目录 聚合，封面、歌词、专辑图自动补全；支持可视分页与模糊搜索
 - **网络电台**：省市台 / 分类 / 网络台三维分组，台标上传与 URL 导入，M3U 批量导入导出，全站共享收藏
@@ -89,7 +94,13 @@ MusicHub/
 
 ## 🙏 致谢
 
-- [MusicFree](https://github.com/maotoumao/MusicFree) — 插件协议与生态
+本项目的诞生直接受益于以下两个项目，特此感谢：
+
+- **[MusicFree](https://github.com/maotoumao/MusicFree)** — MusicHub 的插件协议、插件运行引擎（`app/backend/MusicFree/`）与音源能力均改编自 MusicFree，并做了服务端化改造。没有它的插件生态，就没有 MusicHub 的网络音乐能力。
+- **[落雪音乐 lx-music-desktop](https://github.com/lyswhut/lx-music-desktop)** — `app/backend/lxmusic/` 即基于落雪的内置音源 SDK（musicSdk）打包改造，支持各平台榜单 / 热门歌单 / 搜索；其自定义音源脚本运行时（`lx` API 沙箱）也与桌面端协议严格对齐，让落雪生态的音源脚本可以直接在 MusicHub 中使用。
+
+同样感谢：
+
 - [Navidrome](https://github.com/navidrome/navidrome) / [Subsonic API](http://www.subsonic.org/pages/api.jsp) / [OpenSubsonic](https://opensubsonic.netlify.app/) — 客户端协议
 - [Amcfy Music（箭头音乐）](https://www.amcfy.com/) — 优秀的第三方客户端，兼容性参考
 
