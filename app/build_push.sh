@@ -9,7 +9,7 @@ HUB_USER="gldl137"
 # 自动定位项目目录：build_push.sh 本身就在 app/ 目录下，直接以其所在目录为构建上下文
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 IMAGE_NAME="musichub"
-VERSION="${1:-beta}"                        # 版本号: 插件参数优先, 缺省用默认(beta)
+VERSION="${1:-2.0.0}"                       # 版本号: 插件参数优先, 缺省用默认(2.0.0)
 
 # ====================== 校验 ======================
 echo "[$(date +"%Y-%m-%d %H:%M:%S")] === 构建推送开始: 版本 $VERSION ==="

@@ -3,7 +3,7 @@ services:
     build:
       context: ./app
       dockerfile: Dockerfile
-    image: gldl137/musichub:latest
+    image: gldl137/musichub:2.0.0
     container_name: musichub
     ports:
       - "${BACKEND_PORT:-8000}:8000"  # 后端服务端口

@@ -40,7 +40,7 @@
 ## 🚀 快速开始（Docker）
 
 **镜像地址（Docker Hub）**：[`gldl137/musichub`](https://hub.docker.com/r/gldl137/musichub)
-`beta` 为最新滚动构建；`1.0.x` 为稳定版本 tag，可按需固定。
+当前版本 `2.0.0`（推荐）；历史版本 tag 与滚动构建见 Docker Hub 页面。
 
 ### 方式一：直接使用镜像（推荐，无需克隆源码）
 
@@ -49,7 +49,7 @@
 ```yaml
 services:
   musichub:
-    image: gldl137/musichub:beta
+    image: gldl137/musichub:2.0.0
     container_name: musichub
     ports:
       - "8000:8000"          # 左边端口可自行修改，如 "8080:8000"
@@ -76,7 +76,7 @@ docker run -d --name musichub -p 8000:8000 \
   -v ./data:/app/data -v ./downloads:/app/downloads \
   -v ./playlists:/app/playlists -v ./music:/app/music \
   -e PUID=1000 -e PGID=1000 -e TZ=Asia/Shanghai \
-  --restart unless-stopped gldl137/musichub:beta
+  --restart unless-stopped gldl137/musichub:2.0.0
 ```
 
 ### 方式二：源码构建
@@ -97,7 +97,7 @@ docker compose up -d --build
 ### 升级
 
 ```bash
-docker pull gldl137/musichub:beta
+docker pull gldl137/musichub:2.0.0
 docker compose up -d     # 重建容器，数据保留
 ```
 

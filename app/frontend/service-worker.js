@@ -10,7 +10,7 @@
  *  - /api/ 与跨域资源（音频、封面源）不缓存、永远走网络。
  */
 
-const CACHE_NAME = 'musichub-v6';
+const CACHE_NAME = 'musichub-v7';
 
 // 相对路径预缓存，兼容部署在子目录的情况
 const CORE_ASSETS = [
