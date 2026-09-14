@@ -42,7 +42,7 @@
 **镜像地址（Docker Hub）**：[`gldl137/musichub`](https://hub.docker.com/r/gldl137/musichub)
 `beta` 为最新滚动构建；`1.0.x` 为稳定版本 tag，可按需固定。
 
-### 方式一：直接使用镜像（推荐，无需克隆源码）
+### 方式一：直接使用镜像
 
 新建一个空目录，创建 `docker-compose.yml`：
 
@@ -65,42 +65,12 @@ services:
     restart: unless-stopped
 ```
 
-```bash
-docker compose up -d
-```
-
-或使用 `docker run` 一行启动：
-
-```bash
-docker run -d --name musichub -p 8000:8000 \
-  -v ./data:/app/data -v ./downloads:/app/downloads \
-  -v ./playlists:/app/playlists -v ./music:/app/music \
-  -e PUID=1000 -e PGID=1000 -e TZ=Asia/Shanghai \
-  --restart unless-stopped gldl137/musichub:beta
-```
-
-### 方式二：源码构建
-
-```bash
-git clone https://github.com/gldl137/MusicHub.git
-cd MusicHub
-docker compose up -d --build
-```
-
 ### 启动后
 
 浏览器访问 <http://localhost:8000>
 
 - 默认管理员：`admin` / `admin`（**登录后请立即修改密码**）
 - 所有个人数据（数据库、插件配置、封面缓存、收藏等）都在挂载的 `data/` 目录，升级/重建容器不丢数据
-
-### 升级
-
-```bash
-docker pull gldl137/musichub:beta
-docker compose up -d     # 重建容器，数据保留
-```
-
 
 ### 连接第三方客户端（OpenSubsonic / Subsonic）
 
@@ -110,29 +80,6 @@ docker compose up -d     # 重建容器，数据保留
 |---|---|
 | 服务器地址 | `http://<你的IP>:8000` |
 | 用户名 / 密码 | 与 Web 端登录一致 |
-
-## 📁 目录结构
-
-```
-MusicHub/
-├── docker-compose.yml        # 一键部署（构建 ./app 镜像）
-├── 项目介绍/                  # 界面截图（README 引用）
-└── app/
-    ├── Dockerfile
-    ├── backend/              # Node.js 后端（Express + SQLite）
-    │   ├── server.js         # 入口
-    │   ├── rest/             # OpenSubsonic /rest 实现
-    │   ├── routes/           # Web API（音乐/歌单/电台/插件/设置…）
-    │   ├── MusicFree/        # MusicFree 插件运行引擎
-    │   ├── lib/  core/  services/  scheduler/  migrations/
-    │   └── lxmusic/          # 落雪音乐源适配
-    ├── frontend/             # 纯静态 Web 播放器（无构建步骤）
-    ├── data/                 # 运行时数据（挂载卷，不入库）
-    ├── downloads/  music/  playlists/   # 挂载卷（不入库）
-    └── scripts/
-```
-
-> `app/data`、`app/downloads`、`app/music`、`app/playlists` 为运行时挂载目录，其中的个人数据不会提交到仓库。
 
 ## 🔌 安装插件
 
