@@ -33,3 +33,6 @@ tmp/
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# ===== CodeBuddy 项目数据（不入库） =====
+.codebuddy/
