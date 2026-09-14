@@ -1,0 +1,674 @@
+/* ==================== 订阅管理页面样式（横向卡片，操作在底部，一行4个铺满）==================== */
+
+/* 筛选标签容器 */
+.subscription-filter-tabs {
+    display: flex;
+    gap: clamp(6px, 0.8vw, 10px);
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* 筛选标签按钮 */
+.filter-tab {
+    padding: clamp(4px, 0.6vw, 8px) clamp(10px, 1vw, 16px);
+    border: 1px solid var(--divider-color);
+    background: var(--surface-color);
+    color: var(--text-secondary);
+    border-radius: 16px;
+    cursor: pointer;
+    font-size: clamp(11px, 0.9vw, 13px);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.filter-tab:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.filter-tab.active {
+    background: var(--primary-color);
+    color: var(--text-on-primary);
+    border-color: var(--primary-color);
+}
+
+/* 订阅列表容器 - 一行4个卡片 */
+.subscription-list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(10px, 1vw, 16px);
+    padding: clamp(10px, 1vw, 16px) clamp(12px, 1.5vw, 20px);
+    width: 100%;
+}
+
+@media (max-width: 1800px) {
+    .subscription-list {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 1200px) {
+    .subscription-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .subscription-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 订阅卡片 - 纵向布局，操作在底部 */
+.subscription-card-h {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface-color);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--divider-color);
+    transition: all 0.3s ease;
+}
+
+.subscription-card-h:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    border-color: var(--primary-color);
+}
+
+.subscription-card-h.disabled {
+    opacity: 0.7;
+}
+
+/* 卡片上部内容区域 - 纵向布局 */
+.card-main {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+/* 第一行：选择框 + 状态 */
+.content-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: clamp(6px, 0.8vw, 10px) clamp(8px, 1vw, 12px) clamp(4px, 0.5vw, 6px);
+}
+
+/* 中间区域：封面 + 信息 横向布局 */
+.content-body-row {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    padding: 0 clamp(8px, 1vw, 16px);
+    gap: clamp(8px, 1.5vw, 16px);
+}
+
+/* 左侧封面区域 - 自适应大小（4列布局） */
+.subscription-cover-h {
+    position: relative;
+    width: clamp(120px, 14vw, 120px);
+    min-width: 120px;
+    aspect-ratio: 1 / 1;
+    background: var(--background-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: clamp(4px, 0.8vw, 8px);
+    flex-shrink: 0;
+    margin-bottom: clamp(8px, 1vw, 12px);
+}
+
+.subscription-cover-h img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: clamp(4px, 0.8vw, 8px);
+    display: block;
+}
+
+.cover-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-tertiary);
+    background: linear-gradient(135deg, var(--surface-color), var(--background-color));
+    border-radius: clamp(4px, 0.8vw, 8px);
+}
+
+.cover-placeholder svg {
+    width: clamp(32px, 4vw, 56px);
+    height: clamp(32px, 4vw, 56px);
+    opacity: 0.5;
+}
+
+/* 封面底部进度显示 - 右下角 */
+.cover-progress {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    padding: 2px 8px;
+    background: rgba(0, 0, 0, 0.7);
+    color: var(--primary-color);
+    font-size: clamp(9px, 1vw, 12px);
+    font-weight: 600;
+    text-align: center;
+    border-radius: 4px;
+}
+
+.progress-count {
+    font-family: 'Courier New', monospace;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* 右侧信息区域 */
+.content-info-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    justify-content: space-between;
+}
+
+/* 标题 - 名字单独一行，与封面顶部对齐 - 自适应字体 */
+.content-title {
+    font-size: clamp(12px, 1.2vw, 16px);
+    font-weight: 600;
+    color: var(--primary-color) !important;
+    margin: 0 0 clamp(6px, 1vw, 10px) 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+}
+
+/* 状态标签 */
+.content-status {
+    font-size: clamp(10px, 1vw, 13px);
+    font-weight: 600;
+    padding: clamp(2px, 0.3vw, 4px) clamp(6px, 0.8vw, 10px);
+    border-radius: clamp(3px, 0.5vw, 5px);
+    flex-shrink: 0;
+}
+
+.content-status.status-enabled {
+    background: rgba(76, 175, 80, 0.15);
+    color: #4caf50;
+}
+
+.content-status.status-running {
+    background: rgba(33, 150, 243, 0.15);
+    color: #2196f3;
+}
+
+.content-status.status-disabled {
+    background: rgba(158, 158, 158, 0.15);
+    color: #9e9e9e;
+}
+
+/* 信息列表 */
+.content-info-list {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(3px, 0.6vw, 8px);
+    flex: 1;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: clamp(4px, 0.5vw, 8px);
+    font-size: clamp(11px, 1.1vw, 15px);
+}
+
+.info-label {
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+}
+
+.info-value {
+    color: var(--text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 已完成状态按钮 */
+.status-completed-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1px 10px;
+    background: var(--primary-color);
+    color: var(--text-on-primary);
+    font-size: clamp(10px, 0.85vw, 12px);
+    font-weight: 500;
+    border-radius: 3px;
+    border: none;
+    cursor: default;
+}
+
+/* 可编辑的 Cron 表达式 */
+.cron-editable {
+    display: inline-flex;
+    align-items: center;
+    gap: clamp(3px, 0.4vw, 6px);
+    padding: 0;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Courier New', monospace;
+    font-size: clamp(10px, 1vw, 14px);
+    user-select: none;
+    pointer-events: auto;
+}
+
+/* 定时项 - 与其他项统一间距 */
+.info-item:last-child {
+    /* 移除 margin-top: auto，保持统一间距 */
+}
+
+.cron-editable:hover {
+    background: var(--primary-color);
+    color: var(--text-on-primary);
+}
+
+.cron-editable svg {
+    width: clamp(10px, 1vw, 14px);
+    height: clamp(10px, 1vw, 14px);
+}
+
+/* 底部操作区 */
+.content-actions-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: clamp(6px, 1vw, 12px);
+    padding: clamp(8px, 1vw, 12px) clamp(10px, 1.5vw, 20px);
+    border-top: 1px solid var(--divider-color);
+    background: var(--surface-color);
+}
+
+.content-actions-row .status-completed-btn {
+    margin-right: auto;
+}
+
+/* 操作按钮组 - 右对齐 */
+.action-buttons-group {
+    display: flex;
+    gap: clamp(6px, 1vw, 12px);
+    margin-left: auto;
+}
+
+/* 滑块开关左对齐，其他按钮右对齐 */
+.action-toggle {
+    /* margin-right: auto; 移除，让开关可以右对齐 */
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1px 10px;
+    border-radius: 3px;
+    border: 1px solid var(--divider-color);
+    background: var(--surface-color);
+    color: var(--text-secondary);
+    font-size: clamp(10px, 0.85vw, 12px);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 0 0 auto;
+}
+
+.action-btn:hover {
+    background: var(--background-color);
+}
+
+.action-btn.btn-primary {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--text-on-primary);
+}
+
+.action-btn.btn-primary:hover {
+    background: var(--primary-light);
+}
+
+.action-btn.btn-secondary:hover {
+    background: var(--background-color);
+    border-color: var(--text-secondary);
+}
+
+.action-btn.btn-danger {
+    border-color: #f44336;
+    color: #f44336;
+}
+
+.action-btn.btn-danger:hover {
+    background: #f44336;
+    color: var(--text-on-primary);
+}
+
+.action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* 页面头部 */
+.subscription-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 12px clamp(12px, 1.5vw, 20px);
+    border-bottom: 1px solid var(--divider-color);
+    width: 100%;
+    gap: 16px;
+}
+
+.subscription-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.subscription-count {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: normal;
+}
+
+/* Cron 编辑器弹窗 */
+.cron-editor {
+    padding: 8px;
+}
+
+.cron-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.cron-preset-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--divider-color);
+    border-radius: 8px;
+    background: var(--surface-color);
+    color: var(--text-color);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cron-preset-btn:hover {
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+    color: var(--text-on-primary);
+}
+
+.cron-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cron-input-wrapper label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.cron-input-wrapper .form-input {
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    letter-spacing: 1px;
+}
+
+.cron-hint {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* 空状态 */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    grid-column: 1 / -1;
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.empty-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 8px;
+}
+
+.empty-subtext {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* 加载状态 */
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 60px;
+    grid-column: 1 / -1;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--divider-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ==================== 订阅开关按钮样式 ==================== */
+.subscription-toggle {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    cursor: pointer;
+}
+
+.subscription-toggle .toggle-input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--danger-color, #dc3545);
+    border-radius: 24px;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 6px;
+    box-sizing: border-box;
+}
+
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: var(--text-color);
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    z-index: 2;
+}
+
+.toggle-input:checked + .toggle-slider {
+    background-color: var(--primary-color);
+}
+
+.toggle-input:checked + .toggle-slider::before {
+    transform: translateX(20px);
+}
+
+.toggle-text-on,
+.toggle-text-off {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-color);
+    user-select: none;
+    z-index: 1;
+}
+
+.toggle-text-on {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.toggle-text-off {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.toggle-input:checked + .toggle-slider .toggle-text-on {
+    opacity: 1;
+}
+
+.toggle-input:checked + .toggle-slider .toggle-text-off {
+    opacity: 0;
+}
+
+.subscription-toggle:hover .toggle-slider {
+    filter: brightness(1.1);
+}
+
+/* ==================== 操作区滑块开关样式 ==================== */
+.action-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.action-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.action-toggle-slider {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 16px;
+    background-color: var(--danger-color, #dc3545);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+    flex: none;
+}
+
+.action-toggle-slider::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    background-color: var(--text-color);
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.action-toggle input:checked + .action-toggle-slider {
+    background-color: var(--primary-color);
+}
+
+.action-toggle input:checked + .action-toggle-slider::before {
+    transform: translateY(-50%) translateX(20px);
+}
+
+.action-toggle-text {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-color);
+    user-select: none;
+    margin-left: 5px;
+    white-space: nowrap;
+}
+
+.action-toggle.disabled .action-toggle-text {
+    color: var(--text-muted, #888);
+}
+
+.action-toggle:hover .action-toggle-slider {
+    filter: brightness(1.1);
+}
+
+.action-toggle:active .action-toggle-slider::before {
+    width: 14px;
+}
+
+/* ==================== 下载订阅页面滚动 ==================== */
+/* 页面本身是 flex column + overflow:hidden（见 layout.css），
+   需让筛选头部固定、列表容器内部滚动，否则手机端（单列）内容被裁剪无法上下滑动 */
+        #page-subscribed-toplist {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .subscription-header {
+            flex-shrink: 0;
+        }
+
+        #subscribed-toplist-container {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            touch-action: pan-y;
+            position: relative;
+            padding-bottom: calc(var(--music-bar-height) + 24px);
+        }
+
+
+
+

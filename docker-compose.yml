@@ -1,0 +1,22 @@
+services:
+  musichub:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    image: gldl137/musichub:latest
+    container_name: musichub
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"  # 后端服务端口
+    volumes:
+      - ./app/data:/app/data          # 数据目录（数据库、插件配置、日志等）
+      - ./app/downloads:/app/downloads    # 下载目录（音乐文件）
+      - ./app/playlists:/app/playlists    # 播放列表目录（M3U文件）
+      - ./app/music:/app/music        # 本地音乐目录（本地文件夹功能）
+      # 前端为纯静态文件，挂载工作区 frontend 覆盖镜像内置版本，
+      # 容器无需重建即可同步 app/frontend 下所有代码与样式修改
+      - ./app/frontend:/app/frontend
+    environment:
+      - PUID=${PUID:-1000}            # 运行用户 ID（与宿主机用户对齐，避免挂载目录权限问题）
+      - PGID=${PGID:-1000}            # 运行组 ID
+      - TZ=${TZ:-Asia/Shanghai}       # 时区
+    restart: unless-stopped

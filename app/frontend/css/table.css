@@ -1,0 +1,783 @@
+/* ============================================
+   MusicHub 表格样式
+   Table Styles
+   ============================================ */
+
+/* 基础表格样式 */
+.music-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    color: var(--text-color);
+}
+
+.music-table th,
+.music-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--divider-color);
+}
+
+/* 列头：Apple Music 风格——小号灰字、细间距 */
+.music-table th {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    background: var(--background-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.music-table tbody tr:hover {
+    background: var(--list-hover-color);
+}
+
+/* 正在播放行样式 - 使用主题色 */
+.music-table tbody tr.playing {
+    background: color-mix(in srgb, var(--primary-color) 10%, transparent) !important;
+}
+
+.music-table tbody tr.playing .col-title {
+    color: var(--primary-color) !important;
+}
+
+/* 列宽定义 */
+.col-index {
+    width: 50px;
+    min-width: 50px;
+    text-align: center;
+    color: var(--text-tertiary);
+}
+
+.col-title {
+    width: auto;
+    min-width: 150px;
+    max-width: 300px;
+}
+
+.col-artist {
+    width: 120px;
+    min-width: 120px;
+    max-width: 180px;
+    color: var(--text-secondary);
+}
+
+.col-album {
+    width: 150px;
+    min-width: 150px;
+    max-width: 220px;
+    color: var(--text-secondary);
+}
+
+/* 长文本换行处理 */
+.col-title,
+.col-artist,
+.col-album {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    line-height: 1.4;
+}
+
+.col-duration {
+    width: 60px;
+    min-width: 60px;
+    text-align: right;
+    color: var(--text-tertiary);
+}
+
+.col-action {
+    width: 80px;
+    min-width: 80px;
+    text-align: center;
+}
+
+.col-source {
+    width: 150px;
+    min-width: 150px;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+}
+
+.col-data {
+    width: 60px;
+    min-width: 60px;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+}
+
+/* 来源标签通用样式 */
+.source-tag {
+    display: inline-block;
+    font-size: 12px;
+    color: var(--primary-color);
+    padding: 2px 8px;
+    background: color-mix(in srgb, var(--primary-color) 15%, transparent);
+    border-radius: 4px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    font-weight: 500;
+}
+
+
+
+/* 操作按钮 */
+.music-row-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    margin: 0 2px;
+}
+
+.music-row-btn:hover {
+    background: var(--list-hover-color);
+    color: var(--text-color);
+}
+
+.music-row-btn.playing {
+    color: var(--primary-color);
+}
+
+.music-row-btn.favorited {
+    color: var(--danger-color);
+}
+
+.music-row-btn.downloaded {
+    color: var(--primary-color);
+}
+
+/* 音乐信息样式 */
+.music-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.music-info .music-cover {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    object-fit: cover;
+    background: var(--bg-tertiary);
+}
+
+.music-info .music-title {
+    font-weight: 500;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.music-info .music-subtitle {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 表头操作按钮 */
+.music-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--divider-color);
+    background: var(--bg-secondary);
+}
+
+.music-table-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* 复选框样式 */
+.music-table input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #1db954;
+}
+
+/* 选中行样式 - 使用主题色，添加左边框区分 */
+.music-table tbody tr.selected {
+    background: color-mix(in srgb, var(--primary-color) 15%, transparent) !important;
+    border-left: 3px solid var(--primary-color) !important;
+}
+
+/* 同时选中并播放的行 */
+.music-table tbody tr.playing.selected {
+    background: color-mix(in srgb, var(--primary-color) 20%, transparent) !important;
+}
+
+/* 空状态 */
+.music-table-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-tertiary);
+}
+
+.music-table-empty .empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.music-table-empty .empty-text {
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.music-table-empty .empty-subtext {
+    font-size: 13px;
+    opacity: 0.7;
+}
+
+/* 可拖拽排序样式 */
+.music-table .drag-handle {
+    cursor: move;
+    color: var(--text-tertiary);
+    padding: 4px;
+}
+
+.music-table .drag-handle:hover {
+    color: var(--text-secondary);
+}
+
+.music-table tbody tr.dragging {
+    opacity: 0.5;
+    background: var(--hover-bg);
+}
+
+.music-table tbody tr.drag-over {
+    border-top: 2px solid var(--primary-color);
+}
+
+/* 表格头部带操作按钮 */
+.music-table-header-with-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--divider-color);
+}
+
+.music-table-header-title {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.music-table-header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* 表格工具栏 */
+.music-table-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--divider-color);
+    gap: 16px;
+}
+
+.music-table-toolbar-left,
+.music-table-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.music-table-toolbar-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.music-table-toolbar-info {
+    font-size: 12px;
+    color: var(--text-tertiary);
+}
+
+/* 更多操作按钮 */
+.music-row-btn.more-actions {
+    position: relative;
+}
+
+/* 响应式适配 - 保持桌面端布局，仅调整间距 */
+@media (max-width: 768px) {
+    .music-table th,
+    .music-table td {
+        padding: 8px 6px;
+    }
+}
+
+/* ============================================
+   歌单详情专用表格 - 全比例自适应
+   ============================================ */
+.playlist-detail-table-wrapper {
+    width: 100%;
+    padding: 0 32px;
+    box-sizing: border-box;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+/* 歌单详情：整页滚动模式——Hero 随页面滚出，表格自然延伸 */
+.content-area > .playlist-detail {
+    height: auto !important;
+    min-height: 100%;
+}
+
+/* 排行榜详情：同款整页滚动（Hero 随页面滚出，随机/播放按钮不固定） */
+#toplist-content > .playlist-detail {
+    height: auto !important;
+    min-height: 100%;
+}
+
+/* 热门歌单详情：同款整页滚动 */
+#recommend-content > .playlist-detail,
+#page-recommend > .playlist-detail,
+#lx-recommend-content > .playlist-detail,
+#lx-toplist-content > .playlist-detail {
+    height: auto !important;
+    min-height: 100%;
+}
+
+/* 本地音乐歌手/专辑详情：同款整页滚动（.local-detail 链透传高度） */
+.content-area .local-detail,
+.content-area .local-detail > [id$="-songs"] {
+    height: auto !important;
+    min-height: 100%;
+}
+
+.content-area .local-detail .playlist-detail {
+    height: auto !important;
+    min-height: 100%;
+}
+
+.playlist-detail-table-wrapper::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.playlist-detail-table-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.playlist-detail-table-wrapper::-webkit-scrollbar-thumb {
+    background: var(--text-secondary);
+    border-radius: 4px;
+}
+
+.playlist-detail-table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: var(--text-color);
+}
+
+.playlist-detail-table {
+    width: 100%;
+    min-width: 375px;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+    color: var(--text-color);
+    table-layout: auto;
+}
+
+.playlist-detail-table th,
+.playlist-detail-table td {
+    padding: 8px 1px;
+    text-align: left;
+    border-bottom: 1px solid var(--divider-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 列头：Apple Music 风格——小号灰字（不再是 15px 白色大标题） */
+.playlist-detail-table th {
+    font-weight: 600;
+    color: var(--text-tertiary);
+    background: var(--background-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+/* 列宽定义 - 全部比例 + 最小宽度 */
+.playlist-detail-table .col-checkbox {
+    width: 0.1%;
+    text-align: center;
+}
+
+.playlist-detail-table .col-favorite {
+    width: 0.1%;
+    text-align: center;
+}
+
+.playlist-detail-table .col-download {
+    width: 0.1%;
+    text-align: center;
+}
+
+.playlist-detail-table .col-add {
+    width: 0.1%;
+    text-align: center;
+}
+
+.playlist-detail-table .col-index {
+    width: 1%;
+    min-width: 28px;
+    text-align: left;
+}
+
+.playlist-detail-table .col-title {
+    width: 24%;
+    min-width: 85px;
+}
+
+.playlist-detail-table .col-artist {
+    width: 17%;
+    min-width: 60px;
+}
+
+.playlist-detail-table .col-album {
+    width: 17%;
+    min-width: 60px;
+}
+
+/* 年份列：4 位数字，窄列即可 */
+.playlist-detail-table .col-year {
+    width: 6%;
+    min-width: 44px;
+    white-space: nowrap;
+    color: var(--text-tertiary);
+}
+
+/* 行尾「⋯」菜单列与按钮 */
+.playlist-detail-table .col-more {
+    width: 0.1%;
+    text-align: center;
+}
+
+/* 标题列：封面 + 歌名（电脑端单行；艺人副行仅手机端显示） */
+.playlist-detail-table .title-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.playlist-detail-table .row-cover {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 5px;
+    object-fit: cover;
+    background: var(--bg-tertiary);
+    box-shadow: var(--shadow-sm);
+}
+
+.playlist-detail-table .title-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+/* 艺人副行：电脑端隐藏（有独立艺人列），手机端在 mobile.css 中开启 */
+.playlist-detail-table .title-artist {
+    display: none;
+}
+
+.playlist-detail-table .title-text {
+    font-weight: 500;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.playlist-detail-table .row-more-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.playlist-detail-table tbody tr:hover .row-more-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-color);
+}
+
+.playlist-detail-table .col-duration {
+    width: 10%;
+    min-width: 38px;
+}
+
+.playlist-detail-table .col-source {
+    width: 10%;
+    min-width: 54px;
+    white-space: nowrap;
+}
+
+.playlist-detail-table .col-data {
+    width: 10%;
+    min-width: 50px;
+    white-space: nowrap;
+}
+
+/* ===== 歌曲表格分页条（SongTable pagination） ===== */
+/* sticky 吸底：整页滚动的页面中分页栏常驻可视区底部；固定高度布局中本就在底部，无副作用 */
+.st-pagination {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 16px;
+    border-top: 1px solid var(--divider-color);
+    background: var(--surface-color);
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.06);
+    font-size: 12px;
+    color: var(--text-tertiary);
+}
+
+.st-page-total {
+    white-space: nowrap;
+}
+
+.st-page-size {
+    height: 24px;
+    padding: 0 6px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-color, transparent);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+}
+
+.st-page-size:hover,
+.st-page-size:focus {
+    border-color: var(--primary-color);
+}
+
+.st-page-btns {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    flex-wrap: wrap;
+}
+
+.st-page-btn {
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--surface-color);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-family: inherit;
+    line-height: 22px;
+    cursor: pointer;
+    transition: all 0.12s;
+}
+
+.st-page-btn:hover:not(:disabled):not(.active) {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.st-page-btn.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #fff;
+    cursor: default;
+}
+
+.st-page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.st-page-btn.nav {
+    font-size: 16px;
+    line-height: 22px;
+}
+
+/* 手机端分页栏 */
+@media screen and (max-width: 768px) {
+    .st-pagination {
+        padding: 4px 12px;
+        gap: 8px;
+    }
+
+    .st-page-total {
+        font-size: 11px;
+    }
+
+    .st-page-size {
+        height: 22px;
+        padding: 0 5px;
+        font-size: 11px;
+    }
+
+    .st-page-btn {
+        min-width: 22px;
+        height: 22px;
+        padding: 0 5px;
+        font-size: 11px;
+        line-height: 20px;
+    }
+
+    .st-page-btn.nav {
+        font-size: 14px;
+        line-height: 18px;
+    }
+}
+
+.st-page-ellipsis {
+    color: var(--text-tertiary);
+    padding: 0 2px;
+}
+
+/* 操作按钮 */
+.playlist-detail-table .action-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    padding: 0;
+    margin: 0;
+}
+
+.playlist-detail-table .action-btn:hover {
+    background: var(--list-hover-color);
+    color: var(--text-color);
+}
+
+.playlist-detail-table .action-btn.favorited {
+    color: var(--danger-color);
+}
+
+.playlist-detail-table .action-btn.downloaded {
+    color: var(--primary-color);
+}
+
+.playlist-detail-table .action-btn svg {
+    display: block;
+    width: 20px;
+    height: 20px;
+}
+
+.playlist-detail-table input[type="checkbox"].row-checkbox,
+.playlist-detail-table input[type="checkbox"]#select-all {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+/* 行样式 */
+.playlist-detail-table tbody tr {
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+/* 悬停行：整条灰度高亮 */
+.playlist-detail-table tbody tr:hover {
+    background: var(--list-hover-color);
+}
+
+.playlist-detail-table tbody tr:hover td {
+    background: var(--list-hover-color);
+}
+
+/* Apple Music 风格：去掉斑马纹，统一干净背景，靠行分隔线区分 */
+.playlist-detail-table tbody tr:nth-child(odd),
+.playlist-detail-table tbody tr:nth-child(even) {
+    background: transparent;
+}
+
+/* 正在播放行样式 - 使用主题色 */
+.playlist-detail-table tbody tr.playing {
+    background: color-mix(in srgb, var(--primary-color) 10%, transparent) !important;
+}
+
+.playlist-detail-table tbody tr.playing td {
+    color: var(--primary-color) !important;
+}
+
+/* 选中行样式 - 使用主题色，添加左边框区分 */
+.playlist-detail-table tbody tr.selected {
+    background: color-mix(in srgb, var(--primary-color) 15%, transparent) !important;
+    border-left: 3px solid var(--primary-color) !important;
+}
+
+/* 同时选中并播放的行 */
+.playlist-detail-table tbody tr.playing.selected {
+    background: color-mix(in srgb, var(--primary-color) 20%, transparent) !important;
+    border-left: 3px solid var(--primary-color) !important;
+}
+
+/* 来源标签（半透明背景，随页面染色透出底色） */
+.playlist-detail-table td .source-tag,
+.playlist-detail-table .source-tag {
+    display: inline-block !important;
+    font-size: 12px !important;
+    color: var(--text-secondary) !important;
+    padding: 2px 8px !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-radius: 4px !important;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    font-weight: 500;
+}
+
+

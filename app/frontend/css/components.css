@@ -1,0 +1,385 @@
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .detail-playlist .playlist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--white-10);
+            flex-shrink: 0;
+        }
+
+        .detail-playlist .playlist-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .detail-playlist .playlist-count {
+            font-size: 16px;
+            color: var(--white-50);
+        }
+
+        .detail-playlist .playlist-divider {
+            height: 1px;
+            background: var(--white-10);
+            margin: 0;
+            flex-shrink: 0;
+        }
+
+        .detail-playlist .playlist-content {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            mask-image: linear-gradient(to bottom, transparent 0%, black 40px, black calc(100% - 40px), transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 40px, black calc(100% - 40px), transparent 100%);
+        }
+
+        .detail-playlist .playlist-content::-webkit-scrollbar {
+            display: none;
+        }
+
+        .detail-playlist .playlist-empty {
+            text-align: center;
+            padding: 100px 20px;
+            color: var(--white-40);
+            font-size: 18px;
+        }
+
+        .detail-playlist .playlist-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            gap: 12px;
+            margin-bottom: 2px;
+            border-bottom: 1px solid var(--white-08);
+        }
+
+        .detail-playlist .playlist-item-index {
+            width: 28px;
+            text-align: center;
+            font-size: 14px;
+            color: var(--white-40);
+            flex-shrink: 0;
+        }
+
+        .detail-playlist .playlist-item.playing .playlist-item-index {
+            color: var(--primary-color);
+        }
+
+        .detail-playlist .playlist-item:hover {
+            background: var(--white-08);
+        }
+
+        .detail-playlist .playlist-item.playing {
+            background: var(--list-active-color);
+        }
+
+        .detail-playlist .playlist-item-cover {
+            width: 48px;
+            height: 48px;
+            border-radius: 6px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: var(--white-10);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .detail-playlist .playlist-item-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .detail-playlist .playlist-item-cover .default-cover {
+            font-size: 24px;
+            color: var(--white-30);
+        }
+
+        .detail-playlist .playlist-item-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+            padding-right: 8px;
+        }
+
+        .detail-playlist .playlist-item-title {
+            font-size: 17px;
+            font-weight: 500;
+            color: var(--text-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .detail-playlist .playlist-item.playing .playlist-item-title {
+            color: var(--primary-color);
+        }
+
+        .detail-playlist .playlist-item-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: var(--white-50);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .detail-playlist .playlist-item-row1 {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .detail-playlist .playlist-item-row1-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .detail-playlist .playlist-item-duration {
+            color: var(--white-50);
+            font-size: 13px;
+            font-variant-numeric: tabular-nums;
+            width: 48px;
+            flex-shrink: 0;
+        }
+
+        .detail-playlist .playlist-item-source {
+            color: var(--white-40);
+            font-size: 12px;
+            padding: 2px 8px;
+            background: var(--white-10);
+            border-radius: 4px;
+            min-width: 50px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .detail-playlist .playlist-item-row2 {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--white-50);
+        }
+
+        .detail-playlist .playlist-item-artist {
+            color: var(--white-60);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .detail-playlist .playlist-item-album {
+            color: var(--white-40);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .detail-playlist .playlist-item-album::before {
+            content: '•';
+            margin-right: 8px;
+            color: var(--white-30);
+        }
+
+        .detail-playlist .playlist-item-remove {
+            background: transparent;
+            border: none;
+            color: var(--white-30);
+            font-size: 14px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            opacity: 0;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+
+        .detail-playlist .playlist-item:hover .playlist-item-remove {
+            opacity: 1;
+        }
+
+        .detail-playlist .playlist-item-remove:hover {
+            background: var(--white-10);
+            color: var(--danger-color);
+        }
+
+        .lyrics-placeholder {
+            color: var(--white-25);
+            font-size: 32px;
+            padding-top: 250px;
+            text-align: center;
+        }
+
+        .lyrics-line {
+            font-size: 34px;
+            line-height: 2.2;
+            color: var(--white-40);
+            transition: all 0.3s ease;
+            padding: 6px 0;
+        }
+
+        .lyrics-line.active {
+            font-size: 40px;
+            color: var(--primary-color);
+            font-weight: 500;
+            text-shadow: 0 0 40px var(--primary-glow);
+        }
+
+        /* 模态框 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            animation: fadeIn 0.2s ease;
+            overflow: auto;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--surface-color);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 480px;
+            box-shadow: 0 4px 20px var(--shadow-color);
+            color: var(--text-color);
+            margin: auto;
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+            font-size: 18px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--divider-color);
+            color: var(--text-color);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 12px 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            border-top: 1px solid var(--divider-color);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            background: var(--surface-color);
+            border: 1px solid var(--divider-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .form-select {
+            padding: 8px 12px;
+            background: var(--surface-color);
+            border: 1px solid var(--divider-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+            cursor: pointer;
+        }
+
+        .form-select:focus {
+            border-color: var(--primary-color);
+        }
+
+        /* 原生下拉框（select/option）适配深浅主题：展开面板跟随当前主题而非系统默认 */
+        select {
+            color-scheme: light dark;
+        }
+        [data-theme="dark"] select {
+            color-scheme: dark;
+        }
+        [data-theme="light"] select {
+            color-scheme: light;
+        }
+        select option {
+            color: var(--text-primary);
+            background-color: var(--surface-color);
+        }
+
+        /* 文件上传 */
+        .file-upload {
+            border: 2px dashed var(--divider-color);
+            border-radius: 8px;
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .file-upload:hover {
+            border-color: var(--primary-color);
+            background: var(--list-active-color);
+        }
+
+        .file-upload-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.6;
+        }
+
+        .file-upload-text {

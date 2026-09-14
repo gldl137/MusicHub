@@ -1,0 +1,18 @@
+<!-- 插件管理页面 -->
+<div class="page" id="page-plugins">
+    <div class="plugin-header">插件管理</div>
+    <div class="plugin-toolbar">
+        <button class="btn btn-secondary" onclick="showInstallFromFileModal()">
+            <span>📁</span> 从本地文件安装
+        </button>
+        <button class="btn btn-secondary" onclick="showInstallFromUrlModal()">
+            <span>🌐</span> 从网络安装插件
+        </button>
+    </div>
+    <div id="plugin-table-container">
+        <div class="empty-state">
+            <div class="empty-icon">🔌</div>
+            <div class="empty-text">暂无插件，点击上方按钮安装</div>
+        </div>
+    </div>
+</div>

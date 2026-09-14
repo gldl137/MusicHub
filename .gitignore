@@ -1,0 +1,35 @@
+# ===== 个人数据 / 运行时数据（不入库） =====
+app/data/
+app/downloads/
+app/music/
+app/playlists/
+app/backend/uploads/
+app/backend/tmp-bili/
+
+# ===== 参考源码（不入库） =====
+源码/
+
+# ===== 依赖 =====
+node_modules/
+
+# ===== 敏感信息 =====
+.env
+.env.*
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.db-shm
+*.db-wal
+.jwt_secret
+.git-credentials
+
+# ===== 日志 / 临时文件 =====
+*.log
+logs/
+tmp/
+.cache/
+
+# ===== 系统文件 =====
+.DS_Store
+Thumbs.db
+Desktop.ini

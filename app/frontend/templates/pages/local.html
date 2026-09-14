@@ -1,0 +1,20 @@
+<!-- 本地音乐页面 -->
+<div class="page" id="page-local">
+    <div class="local-music-header">
+        <div class="local-music-tabs">
+            <button class="tab-btn active" data-tab="songs" onclick="switchLocalTab('songs')">单曲</button>
+            <button class="tab-btn" data-tab="artists" onclick="switchLocalTab('artists')">歌手</button>
+            <button class="tab-btn" data-tab="albums" onclick="switchLocalTab('albums')">专辑</button>
+            <button class="tab-btn" data-tab="folders" onclick="switchLocalTab('folders')">目录</button>
+        </div>
+        <div class="local-music-search">
+            <input type="text" id="local-search-input" class="local-search-input" placeholder="搜索歌曲、歌手、专辑" oninput="onLocalSearchInput(this.value)" />
+        </div>
+    </div>
+    <div class="local-music-content">
+        <div class="tab-content active" id="local-songs-tab"></div>
+        <div class="tab-content" id="local-artists-tab"></div>
+        <div class="tab-content" id="local-albums-tab"></div>
+        <div class="tab-content" id="local-folders-tab"></div>
+    </div>
+</div>

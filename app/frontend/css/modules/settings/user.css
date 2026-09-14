@@ -1,0 +1,482 @@
+/* ==================== 用户设置样式 ==================== */
+
+/* 用户设置卡片 */
+.user-settings {
+    background: var(--surface-color);
+    border-radius: 16px;
+    padding: 28px;
+    border: none;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* 头部区域 */
+.user-settings-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.user-settings-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--primary-glow);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+}
+
+.user-settings-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.user-settings-title {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.user-settings-title-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.user-settings-title-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+/* 内容区域 */
+.user-settings-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* 操作按钮区域 */
+.user-settings-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.user-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    outline: none;
+}
+
+.user-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.user-btn-primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+    color: white;
+}
+
+.user-btn-primary:hover {
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-color) 100%);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-glow);
+}
+
+/* 添加用户弹窗主题适配 */
+#add-user-modal .modal {
+    background: var(--surface-color);
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
+}
+
+#add-user-modal .modal-header {
+    padding: 20px 24px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--divider-color);
+}
+
+#add-user-modal .modal-body {
+    padding: 24px;
+}
+
+#add-user-modal .form-group {
+    margin-bottom: 20px;
+}
+
+#add-user-modal .form-group:last-child {
+    margin-bottom: 0;
+}
+
+#add-user-modal .form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+#add-user-modal .form-input {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--divider-color);
+    border-radius: 8px;
+    color: var(--text-color);
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+#add-user-modal .form-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+#add-user-modal .form-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+#add-user-modal .modal-footer {
+    padding: 16px 24px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    border-top: 1px solid var(--divider-color);
+}
+
+#add-user-modal .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    outline: none;
+}
+
+#add-user-modal .btn-primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+    color: white;
+}
+
+#add-user-modal .btn-primary:hover {
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-color) 100%);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-glow);
+}
+
+#add-user-modal .btn-secondary {
+    background: var(--bg-secondary);
+    color: var(--text-color);
+    border: 1px solid var(--divider-color);
+}
+
+#add-user-modal .btn-secondary:hover {
+    background: var(--surface-hover);
+    border-color: var(--text-secondary);
+}
+
+/* 修改密码弹窗主题适配 */
+#change-password-modal .modal {
+    background: var(--surface-color);
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
+}
+
+#change-password-modal .modal-header {
+    padding: 20px 24px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--divider-color);
+}
+
+#change-password-modal .modal-body {
+    padding: 24px;
+}
+
+#change-password-modal .form-group {
+    margin-bottom: 20px;
+}
+
+#change-password-modal .form-group:last-child {
+    margin-bottom: 0;
+}
+
+#change-password-modal .form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+#change-password-modal .form-input {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--divider-color);
+    border-radius: 8px;
+    color: var(--text-color);
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+#change-password-modal .form-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+#change-password-modal .form-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+#change-password-modal .form-input[readonly] {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+}
+
+#change-password-modal .modal-footer {
+    padding: 16px 24px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    border-top: 1px solid var(--divider-color);
+}
+
+#change-password-modal .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    outline: none;
+}
+
+#change-password-modal .btn-primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+    color: white;
+}
+
+#change-password-modal .btn-primary:hover {
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-color) 100%);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-glow);
+}
+
+#change-password-modal .btn-secondary {
+    background: var(--bg-secondary);
+    color: var(--text-color);
+    border: 1px solid var(--divider-color);
+}
+
+#change-password-modal .btn-secondary:hover {
+    background: var(--surface-hover);
+    border-color: var(--text-secondary);
+}
+
+/* 表格容器 */
+.user-table-container {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--divider-color);
+}
+
+/* 用户表格 - 固定列宽分布 */
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    table-layout: fixed;
+}
+
+.user-table thead {
+    background: var(--bg-tertiary, rgba(255,255,255,0.05));
+}
+
+/* 列宽比例自适应分布 */
+.user-table th:nth-child(1),
+.user-table td:nth-child(1) {
+    width: 25%;
+    padding: 14px 20px;
+    text-align: left;
+}
+
+.user-table th:nth-child(2),
+.user-table td:nth-child(2) {
+    width: 50%;
+    padding: 14px 20px;
+    text-align: left;
+}
+
+.user-table th:nth-child(3),
+.user-table td:nth-child(3) {
+    width: 25%;
+    padding: 14px 20px;
+    text-align: left;
+}
+
+.user-table th {
+    font-weight: 600;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--divider-color);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.user-table td {
+    color: var(--text-color);
+    border-bottom: 1px solid var(--divider-color);
+}
+
+.user-table tbody tr:hover {
+    background: var(--surface-hover, rgba(255,255,255,0.05));
+}
+
+.user-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* 用户名样式 */
+.user-table td:first-child {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+/* 备注列 - 文本截断 */
+.user-table td:nth-child(2) {
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 空状态 */
+.user-table-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 20px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.user-table-empty svg {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+    opacity: 0.4;
+    stroke-width: 1.5;
+}
+
+/* 表格操作按钮 */
+.user-table-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.user-table-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--divider-color);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.user-table-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.user-table-btn:hover {
+    background: var(--surface-hover);
+    color: var(--text-color);
+    border-color: var(--text-secondary);
+}
+
+.user-table-btn-danger {
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.user-table-btn-danger:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+}
+
+.user-table-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.user-table-btn:disabled:hover {
+    background: transparent;
+    border-color: var(--divider-color);
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+    .user-settings {
+        padding: 20px;
+    }
+
+    .user-settings-header {
+        margin-bottom: 16px;
+    }
+
+    .user-settings-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .user-settings-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .user-settings-title-text {
+        font-size: 16px;
+    }
+
+    .user-table th,
+    .user-table td {
+        padding: 12px;
+    }
+
+    .user-table-actions {
+        gap: 4px;
+    }
+
+    .user-table-btn {
+        width: 28px;
+        height: 28px;
+    }
+}

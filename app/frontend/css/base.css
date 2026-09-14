@@ -1,0 +1,290 @@
+* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Apple Music 风格深色主题 - iOS 中性深灰色板，柔和克制 */
+            --primary-color: #1db954;
+            --primary-light: #1ed760;
+            --primary-dark: #1aa34a;
+            --primary-glow: rgba(29, 185, 84, 0.3);
+            --background-color: #1c1c1e;
+            --bg-secondary: #262628;
+            --bg-tertiary: #333336;
+            /* 区域分层底色：参考 Apple Music——侧边栏明显更深、内容区更亮，色差拉开 */
+            --bg-sidebar: #19191b;
+            --bg-player: #232326;
+            /* RGB 三元组：供 rgba(var(--xxx-rgb), 透明度) 使用（旧内核不支持 color-mix 的兼容方案） */
+            --bg-player-rgb: 35, 35, 38;
+            --bg-secondary-rgb: 38, 38, 40;
+            --bg-header-rgb: 28, 28, 30;
+            --surface-color: #2a2a2a;
+            --surface-hover: #383838;
+            --surface-active: #464646;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-color: #ffffff;
+            --text-secondary: #b3b3b3;
+            --text-tertiary: #8e8e8e;
+            --divider-color: rgba(255, 255, 255, 0.08);
+            --list-even-color: rgba(255, 255, 255, 0.02);
+            --list-hover-color: rgba(255, 255, 255, 0.05);
+            --list-active-color: color-mix(in srgb, var(--primary-color) 15%, transparent);
+            --success-color: #1db954;
+            --danger-color: #ff4757;
+            --info-color: #3498db;
+            --warning-color: #ffa502;
+            /* 阴影整体调轻：Apple 风格少阴影、靠背景对比分层 */
+            --shadow-color: rgba(0, 0, 0, 0.35);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.15);
+            --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.4);
+            --shadow-glow: 0 0 40px rgba(29, 185, 84, 0.2);
+
+            /* 兼容别名：部分模块引用的历史变量名，统一映射到现有主题变量
+               （修复 login-logo-icon 等处因 --accent-color 未定义导致的颜色丢失） */
+            --accent-color: var(--primary-light);
+            --bg-primary: var(--background-color);
+            --bg-color: var(--background-color);
+            --bg-hover: var(--surface-hover);
+            --bg-active: var(--surface-active);
+            --hover-bg: var(--list-hover-color);
+            --text-primary: var(--text-color);
+
+            /* 白色透明度变量（用于播放器深色渐变背景） */
+            --white-05: rgba(255, 255, 255, 0.05);
+            --white-08: rgba(255, 255, 255, 0.08);
+            --white-10: rgba(255, 255, 255, 0.1);
+            --white-15: rgba(255, 255, 255, 0.15);
+            --white-20: rgba(255, 255, 255, 0.2);
+            --white-25: rgba(255, 255, 255, 0.25);
+            --white-30: rgba(255, 255, 255, 0.3);
+            --white-40: rgba(255, 255, 255, 0.4);
+            --white-50: rgba(255, 255, 255, 0.5);
+            --white-60: rgba(255, 255, 255, 0.6);
+            --white-80: rgba(255, 255, 255, 0.8);
+            --white-90: rgba(255, 255, 255, 0.9);
+
+            /* 播放器渐变背景 */
+            --player-gradient-start: #2d2420;
+            --player-gradient-mid: #1a1412;
+            --player-gradient-end: #0d0a09;
+            --player-gradient: linear-gradient(180deg, var(--player-gradient-start) 0%, var(--player-gradient-mid) 50%, var(--player-gradient-end) 100%);
+
+            /* 现代化圆角系统 */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --radius-2xl: 20px;
+
+            /* 尺寸 */
+            --sidebar-width: 180px;
+            --header-height: 64px;
+            --music-bar-height: 72px;
+
+            /* 动画 */
+            --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ==================== 浅色/白色主题 ==================== */
+        [data-theme="light"] {
+            /* 主色调保持不变 */
+            --primary-color: #1db954;
+            --primary-light: #1ed760;
+            --primary-dark: #1aa34a;
+            --primary-glow: rgba(29, 185, 84, 0.25);
+
+            /* 背景色 - 浅色模式 */
+            --background-color: #f5f5f5;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f0f0f0;
+            /* 区域分层底色 - 浅色模式 */
+            --bg-sidebar: #ececec;
+            --bg-player: #ffffff;
+            --bg-player-rgb: 255, 255, 255;
+            --bg-secondary-rgb: 255, 255, 255;
+            --bg-header-rgb: 245, 245, 245;
+
+            /* 表面色 - 卡片、弹窗等 */
+            --surface-color: #ffffff;
+            --surface-hover: #f5f5f5;
+            --surface-active: #e8e8e8;
+
+            /* 边框和分隔线 */
+            --border-color: rgba(0, 0, 0, 0.08);
+            --divider-color: rgba(0, 0, 0, 0.06);
+
+            /* 文字颜色 */
+            --text-color: #1a1a1a;
+            --text-secondary: #666666;
+            --text-tertiary: #999999;
+
+            /* 列表样式 */
+            --list-even-color: rgba(0, 0, 0, 0.02);
+            --list-hover-color: rgba(0, 0, 0, 0.04);
+            --list-active-color: color-mix(in srgb, var(--primary-color) 12%, transparent);
+
+            /* 状态颜色 */
+            --success-color: #1db954;
+            --danger-color: #e74c3c;
+            --info-color: #3498db;
+            --warning-color: #f39c12;
+
+            /* 阴影 - 浅色模式下更柔和 */
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+            --shadow-glow: 0 0 40px rgba(29, 185, 84, 0.15);
+
+            /* 黑色透明度变量（用于浅色背景上的遮罩效果） */
+            --white-05: rgba(0, 0, 0, 0.02);
+            --white-08: rgba(0, 0, 0, 0.04);
+            --white-10: rgba(0, 0, 0, 0.05);
+            --white-15: rgba(0, 0, 0, 0.08);
+            --white-20: rgba(0, 0, 0, 0.1);
+            --white-25: rgba(0, 0, 0, 0.12);
+            --white-30: rgba(0, 0, 0, 0.15);
+            --white-40: rgba(0, 0, 0, 0.2);
+            --white-50: rgba(0, 0, 0, 0.25);
+            --white-60: rgba(0, 0, 0, 0.3);
+            --white-80: rgba(0, 0, 0, 0.4);
+            --white-90: rgba(0, 0, 0, 0.5);
+
+            /* 播放器渐变背景 - 浅色模式 */
+            --player-gradient-start: #f8f8f8;
+            --player-gradient-mid: #f0f0f0;
+            --player-gradient-end: #e8e8e8;
+            --player-gradient: linear-gradient(180deg, var(--player-gradient-start) 0%, var(--player-gradient-mid) 50%, var(--player-gradient-end) 100%);
+        }
+
+        /* 跟随系统主题 - 自动模式 */
+        @media (prefers-color-scheme: light) {
+            [data-theme="auto"] {
+                /* 主色调保持不变 */
+                --primary-color: #1db954;
+                --primary-light: #1ed760;
+                --primary-dark: #1aa34a;
+                --primary-glow: rgba(29, 185, 84, 0.25);
+
+                /* 背景色 - 浅色模式 */
+                --background-color: #f5f5f5;
+                --bg-secondary: #ffffff;
+                --bg-tertiary: #f0f0f0;
+                /* 区域分层底色 - 浅色模式（自动模式） */
+                --bg-sidebar: #ececec;
+                --bg-player: #ffffff;
+
+                /* 表面色 - 卡片、弹窗等 */
+                --surface-color: #ffffff;
+                --surface-hover: #f5f5f5;
+                --surface-active: #e8e8e8;
+
+                /* 边框和分隔线 */
+                --border-color: rgba(0, 0, 0, 0.08);
+                --divider-color: rgba(0, 0, 0, 0.06);
+
+                /* 文字颜色 */
+                --text-color: #1a1a1a;
+                --text-secondary: #666666;
+                --text-tertiary: #999999;
+
+                /* 列表样式 */
+                --list-even-color: rgba(0, 0, 0, 0.02);
+                --list-hover-color: rgba(0, 0, 0, 0.04);
+                --list-active-color: color-mix(in srgb, var(--primary-color) 12%, transparent);
+
+                /* 状态颜色 */
+                --success-color: #1db954;
+                --danger-color: #e74c3c;
+                --info-color: #3498db;
+                --warning-color: #f39c12;
+
+                /* 阴影 - 浅色模式下更柔和 */
+                --shadow-color: rgba(0, 0, 0, 0.08);
+                --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+                --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+                --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+                --shadow-glow: 0 0 40px rgba(29, 185, 84, 0.15);
+
+                /* 黑色透明度变量 */
+                --white-05: rgba(0, 0, 0, 0.02);
+                --white-08: rgba(0, 0, 0, 0.04);
+                --white-10: rgba(0, 0, 0, 0.05);
+                --white-15: rgba(0, 0, 0, 0.08);
+                --white-20: rgba(0, 0, 0, 0.1);
+                --white-25: rgba(0, 0, 0, 0.12);
+                --white-30: rgba(0, 0, 0, 0.15);
+                --white-40: rgba(0, 0, 0, 0.2);
+                --white-50: rgba(0, 0, 0, 0.25);
+                --white-60: rgba(0, 0, 0, 0.3);
+                --white-80: rgba(0, 0, 0, 0.4);
+                --white-90: rgba(0, 0, 0, 0.5);
+
+                /* 播放器渐变背景 - 浅色模式 */
+                --player-gradient-start: #f8f8f8;
+                --player-gradient-mid: #f0f0f0;
+                --player-gradient-end: #e8e8e8;
+                --player-gradient: linear-gradient(180deg, var(--player-gradient-start) 0%, var(--player-gradient-mid) 50%, var(--player-gradient-end) 100%);
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: var(--background-color);
+            color: var(--text-color);
+            height: 100dvh;
+            height: 100dvh;
+            overflow: hidden;
+            font-size: 14px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            /* 触摸设备：去掉点击高亮块，长按要求由业务层控制 */
+            -webkit-tap-highlight-color: transparent;
+            /* 阻止整页橡皮筋 / 下拉刷新，滚动穿透由弹层内部 overscroll-behavior 处理 */
+            overscroll-behavior-y: none;
+            /* 避免长按选中文本 / 系统菜单影响手势 */
+            -webkit-touch-callout: none;
+        }
+
+        /* 弹层 / 可滚动容器：滚动到边界时不再带动底层页面（滚动穿透） */
+        .modal-content,
+        .sidebar,
+        .player-more-menu,
+        .radio-more-panel,
+        .content-playlist-body,
+        .detail-right {
+            overscroll-behavior: contain;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100dvh;
+            height: 100dvh;
+        }
+
+        /* 左侧边栏 - 比内容略深 + 右侧外框线 */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            height: var(--header-height);
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            /* 与侧边栏融为一体：无分隔线、无独立背景 */
+            border-bottom: none;
+            background: transparent;
+        }

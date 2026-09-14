@@ -1,0 +1,351 @@
+/**
+ * 登录页面样式
+ */
+
+/* 登录页面容器 */
+.login-page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+/* 登录页面隐藏状态 */
+.login-page.hidden {
+    display: none !important;
+}
+
+/* 登录卡片 */
+.login-card {
+    width: 100%;
+    max-width: 400px;
+    padding: 40px;
+    background: var(--surface-color);
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--divider-color);
+}
+
+/* Logo 区域 */
+.login-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 32px;
+}
+
+.login-logo-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: white;
+    font-weight: bold;
+}
+
+.login-logo-text {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-color);
+    letter-spacing: -0.5px;
+}
+
+/* 登录标题 */
+.login-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-color);
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+/* 登录表单 */
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 表单组 */
+.login-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.login-form-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.login-form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--divider-color);
+    border-radius: 10px;
+    color: var(--text-color);
+    font-size: 15px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.login-form-group input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-color-alpha, rgba(29, 185, 84, 0.1));
+}
+
+.login-form-group input::placeholder {
+    color: var(--text-tertiary);
+}
+
+/* 登录按钮 */
+.login-btn {
+    width: 100%;
+    padding: 14px 24px;
+    margin-top: 8px;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.login-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(29, 185, 84, 0.3);
+}
+
+.login-btn:active {
+    transform: translateY(0);
+}
+
+.login-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* 错误消息 */
+.login-error {
+    padding: 12px 16px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 8px;
+    color: #ef4444;
+    font-size: 14px;
+    display: none;
+}
+
+.login-error.show {
+    display: block;
+}
+
+/* 默认管理员提示 */
+.login-hint {
+    margin-top: 20px;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    text-align: center;
+}
+
+.login-hint-text {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin: 0;
+}
+
+.login-hint-code {
+    font-family: monospace;
+    background: var(--bg-primary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--text-secondary);
+}
+
+/* 登录页脚 */
+.login-footer {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-tertiary);
+}
+
+/* 响应式适配 */
+@media (max-width: 480px) {
+    .login-card {
+        max-width: 100%;
+        margin: 20px;
+        padding: 32px 24px;
+    }
+
+    .login-logo-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 24px;
+    }
+
+    .login-logo-text {
+        font-size: 24px;
+    }
+
+    .login-title {
+        font-size: 18px;
+    }
+}
+
+/* 主应用容器（登录后显示） */
+.app-wrapper {
+    display: none;
+    width: 100%;
+    height: 100%;
+}
+
+.app-wrapper.logged-in {
+    display: block;
+}
+
+/* 用户信息显示 */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-secondary);
+    position: relative;
+}
+
+.user-info:hover {
+    background: var(--bg-secondary);
+    color: var(--text-color);
+}
+
+.user-menu-icon {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+    height: 100%;
+}
+
+.user-name-text {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+    .user-name-text {
+        display: none;
+    }
+    .user-info {
+        padding: 0;
+    }
+}
+
+.user-avatar {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: white;
+    font-weight: 600;
+    line-height: 1;
+    user-select: none;
+}
+
+.user-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 用户下拉菜单 */
+.user-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background: var(--surface-color);
+    border: 1px solid var(--divider-color);
+    border-radius: 10px;
+    box-shadow: var(--shadow-lg);
+    min-width: 160px;
+    display: none;
+    z-index: 99999;
+}
+
+/* 侧边栏底部时向上弹出 */
+.sidebar-footer .user-dropdown {
+    top: auto;
+    bottom: 100%;
+    margin-top: 0;
+    margin-bottom: 8px;
+}
+
+.user-dropdown.show {
+    display: block;
+}
+
+.user-dropdown-item {
+    padding: 10px 16px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-dropdown-item:hover {
+    background: var(--bg-secondary);
+    color: var(--text-color);
+}
+
+.user-dropdown-item:first-child {
+    border-radius: 10px 10px 0 0;
+}
+
+.user-dropdown-item:last-child {
+    border-radius: 0 0 10px 10px;
+}
+
+.user-dropdown-divider {
+    height: 1px;
+    background: var(--divider-color);
+    margin: 4px 0;
+}

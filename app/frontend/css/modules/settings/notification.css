@@ -1,0 +1,276 @@
+/* ==================== 通知设置样式 ==================== */
+
+/* 通知设置卡片 */
+.notification-settings {
+    background: var(--surface-color);
+    border-radius: 16px;
+    padding: 28px;
+    border: none;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* 头部区域 */
+.notification-settings-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.notification-settings-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--primary-glow);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+}
+
+.notification-settings-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.notification-settings-title {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.notification-settings-title-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.notification-settings-title-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+/* 内容区域 */
+.notification-settings-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* 开关行 */
+.notification-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.notification-toggle-label {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+/* 开关样式 */
+.notification-toggle-switch {
+    position: relative;
+    width: 52px;
+    height: 28px;
+    cursor: pointer;
+}
+
+.notification-toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.notification-toggle-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--white-15);
+    border-radius: 28px;
+    transition: all 0.3s ease;
+}
+
+.notification-toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    background: var(--white-90);
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.notification-toggle-switch input:checked + .notification-toggle-slider {
+    background: var(--primary-color);
+}
+
+.notification-toggle-switch input:checked + .notification-toggle-slider::before {
+    left: 27px;
+    background: var(--text-color);
+}
+
+.notification-toggle-status {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.notification-toggle-hint {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+/* 输入框组 */
+.notification-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notification-input-label {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.notification-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.notification-input-icon {
+    position: absolute;
+    left: 16px;
+    width: 18px;
+    height: 18px;
+    color: var(--text-secondary);
+    pointer-events: none;
+}
+
+.notification-input {
+    width: 100%;
+    padding: 14px 16px 14px 48px;
+    background: var(--bg-tertiary, rgba(255,255,255,0.03));
+    border: 1px solid var(--divider-color);
+    border-radius: 12px;
+    color: var(--text-color);
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.notification-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+.notification-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.notification-input-hint {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+/* 按钮区域 */
+.notification-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.notification-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    outline: none;
+}
+
+.notification-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.notification-btn-primary {
+    flex: 1;
+    background: var(--primary-color);
+    color: white;
+}
+
+.notification-btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--primary-glow);
+}
+
+.notification-btn-secondary {
+    background: transparent;
+    border: 1px solid var(--divider-color);
+    color: var(--text-color);
+}
+
+.notification-btn-secondary:hover {
+    background: var(--surface-hover);
+    border-color: var(--text-secondary);
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+    .notification-settings {
+        padding: 20px;
+    }
+
+    .notification-settings-header {
+        margin-bottom: 20px;
+    }
+
+    .notification-settings-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .notification-settings-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .notification-settings-title-text {
+        font-size: 16px;
+    }
+
+    .notification-toggle-row {
+        gap: 8px;
+    }
+
+    .notification-toggle-hint {
+        width: 100%;
+        margin-top: 4px;
+    }
+
+    .notification-actions {
+        flex-direction: column;
+    }
+
+    .notification-btn {
+        width: 100%;
+    }
+}

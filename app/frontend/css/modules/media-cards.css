@@ -1,0 +1,424 @@
+/* ============================================
+   统一媒体卡片样式
+   适用于：我的收藏 / 我的歌单 / 我的电台 / 电台
+   目标：四个页面的卡片尺寸、封面比例、间距、字号完全一致，
+        并按屏幕宽度自适应列数（手机端固定 2 列，保证卡片足够大）
+   风格：整卡式设计——封面 + 文字同处一个带背景的卡片容器，
+        hover 整卡上浮 + 变亮 + 阴影，参考现代音乐软件质感
+   ============================================ */
+
+/* ---------------- 网格容器 ---------------- */
+.media-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 18px;
+    padding: 16px;
+    align-content: start;
+}
+
+/* 卡片尺寸变量：随屏幕缩放，保证四个页面完全一致 */
+:root {
+    --media-card-cover-gap: 18px;
+    --media-card-title-size: 13px;
+    --media-card-sub-size: 12px;
+}
+
+/* ---------------- 卡片（Apple 风格：平时无容器感，封面直接摆在页面上；hover 浮现卡片底） ---------------- */
+.media-card {
+    min-width: 0;
+    cursor: pointer;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 10px 10px 12px;
+    transition: transform var(--transition-base), background var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+}
+
+/* hover：浮现卡片底 + 轻微上浮 */
+.media-card:hover {
+    transform: translateY(-3px);
+    background: var(--bg-secondary);
+    box-shadow: var(--shadow-md);
+}
+
+/* 封面：统一 1:1 正方形（内嵌于卡片，圆角略小形成层次） */
+.media-card-cover {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    margin-bottom: var(--media-card-cover-gap);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--bg-tertiary);
+}
+
+.media-card-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--transition-base);
+}
+
+.media-card:hover .media-card-cover img {
+    transform: scale(1.05);
+}
+
+.media-card-title {
+    font-size: var(--media-card-title-size);
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.media-card-sub {
+    font-size: var(--media-card-sub-size);
+    line-height: 1.5;
+    margin-top: 6px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ---------------- 顶部工具条 ---------------- */
+.media-card-toolbar {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;      /* 管理模式按钮多时允许换行，不再被裁切 */
+    row-gap: 6px;
+    gap: 12px;
+    min-height: 24px;     /* 高度自适应内容，不再写死 24px */
+    box-sizing: border-box;
+    padding: 4px 20px;
+}
+
+.media-card-toolbar .btn {
+    white-space: nowrap;
+    line-height: 1;
+    /* 保留按钮背景与边框（主题色/描边），让顶部按钮有真实按钮质感 */
+    border-radius: var(--radius-md);
+}
+
+/* 危险按钮（删除）：红底白字（沿用全局 .btn-danger 样式） */
+
+/* 工具条内按钮稍紧凑但不失按钮感（仅作用于本工具条，不影响全局 .btn-sm） */
+.media-card-toolbar .btn-sm {
+    padding: 5px 12px;
+    font-size: 13px;
+}
+
+/* 工具栏内计数文字同步放大（!important 覆盖渲染中的内联 font-size） */
+.media-card-toolbar #playlist-count-text {
+    font-size: 15px !important;
+}
+
+/* ---------------- 提示条 ---------------- */
+.media-card-hint {
+    flex-shrink: 0;
+    padding: 12px 20px 0;
+}
+
+/* 歌单列表容器：内容超出时可滚动（卡片由内层网格控制内边距） */
+#playlist-list-container {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ============================================
+   平板 / 中小屏：缩小卡片
+   ============================================ */
+@media screen and (max-width: 1120px) {
+    .media-card-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 14px;
+        padding: 14px;
+    }
+
+    .media-card {
+        padding: 8px 8px 10px;
+    }
+}
+
+/* ============================================
+   手机端：统一 2 列，卡片保持足够点击区域
+   ============================================ */
+@media screen and (max-width: 640px) {
+    .media-card-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px;
+        padding: 12px;
+    }
+
+    :root {
+        --media-card-cover-gap: 13px;
+        --media-card-title-size: 13px;
+        --media-card-sub-size: 11px;
+    }
+
+    .media-card {
+        padding: 8px 8px 10px;
+    }
+
+    /* 工具条：高度自适应 + 按钮自动换行全部显示（点管理后多出的按钮不会被截断），计数不换行 */
+    .media-card-toolbar {
+        min-height: 24px;
+        padding: 4px 10px;
+        gap: 8px;
+    }
+
+    .media-card-toolbar > div:first-child {
+        flex: 1;
+        min-width: 0;
+        flex-wrap: wrap;
+        row-gap: 6px;
+    }
+
+    .media-card-toolbar > div:first-child .btn {
+        flex-shrink: 0;
+        padding: 5px 10px;
+        min-height: 28px;
+        font-size: 13px;
+    }
+
+    .media-card-toolbar > div:last-child {
+        flex-shrink: 0;
+        white-space: nowrap;
+        font-size: 12px;
+    }
+
+    .media-card-hint {
+        padding: 10px 12px 0;
+    }
+
+    /* 电台页：维度 Tab 与子菜单改为横向滚动，避免换行挤压内容区 */
+    #radio-tabs,
+    #radio-submenu {
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+
+    #radio-tabs::-webkit-scrollbar,
+    #radio-submenu::-webkit-scrollbar {
+        display: none;
+    }
+
+    #radio-tabs > *,
+    #radio-submenu > * {
+        flex-shrink: 0;
+    }
+
+    /* 电台「更多」面板：改为贴屏底部展开，避免 400px 最小宽度溢出小屏 */
+    #radio-more-panel {
+        left: 12px !important;
+        right: 12px;
+        top: auto !important;
+        bottom: calc(var(--music-bar-height) + env(safe-area-inset-bottom) + 12px);
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        max-height: 45vh !important;
+        padding: 12px !important;
+    }
+}
+
+/* ============================================
+   超小屏手机
+   ============================================ */
+@media screen and (max-width: 380px) {
+    .media-card-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px;
+        padding: 10px;
+    }
+
+    :root {
+        --media-card-cover-gap: 10px;
+        --media-card-title-size: 12px;
+        --media-card-sub-size: 10px;
+    }
+}
+
+/* ============================================
+   电台卡片修正
+   电台卡片复用了 .recommend-sheet-card（热门歌单）类名，
+   在 1120px 以下会被转为列表布局。这里强制恢复为统一卡片布局。
+   ============================================ */
+@media screen and (max-width: 1120px) {
+    .radio-card.recommend-sheet-card,
+    .radio-card.recommend-sheet-card:first-of-type {
+        display: block !important;
+        padding: 0 !important;
+        min-height: 0 !important;
+        border-top: none !important;
+        border-bottom: none !important;
+        background: transparent !important;
+    }
+
+    .radio-card .media-card-cover.toplist-cover {
+        grid-column: auto !important;
+        grid-row: auto !important;
+        width: 100% !important;
+        height: auto !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        margin: 0 0 var(--media-card-cover-gap) 0 !important;
+        border-radius: var(--radius-lg) !important;
+        font-size: 38px;
+    }
+
+    .radio-card .toplist-name {
+        grid-column: auto !important;
+        grid-row: auto !important;
+        text-align: left !important;
+        margin: 0 !important;
+        font-size: var(--media-card-title-size) !important;
+        color: var(--text-color) !important;
+    }
+
+    .radio-card .toplist-desc {
+        grid-column: auto !important;
+        grid-row: auto !important;
+        text-align: left !important;
+        margin: 0 !important;
+        font-size: var(--media-card-sub-size) !important;
+        color: var(--text-tertiary) !important;
+    }
+}
+
+/* ============================================
+   「我的歌单」页：网格顶部间距收紧
+   ============================================ */
+.playlist-grid {
+    padding-top: 8px;
+}
+
+/* ============================================
+   「我的歌单」页：顶部菜单标题居中显示
+   ============================================ */
+.my-playlists-title {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 60%;
+    text-align: center;
+}
+
+/* ============================================
+   卡片悬浮播放按钮（hover 显示，点击直接播放）
+   单曲卡：播放单曲；列表卡：播放整个列表
+   ============================================ */
+.media-card-play {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease;
+    z-index: 4;
+    pointer-events: none;
+}
+
+.media-card:hover .media-card-play,
+.recommend-sheet-card:hover .media-card-play,
+.local-card:hover .media-card-play,
+.playlist-card:hover .media-card-play,
+.toplist-item:hover .media-card-play {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.media-card-play:hover {
+    background: var(--primary-color);
+    transform: scale(1.08);
+}
+
+.media-card-play:active {
+    transform: scale(0.95);
+}
+
+/* ============================================
+   封面音源类型角标：MF（MusicFree 插件）/ LX（落雪自定义音源）
+   位置固定在封面左下角：左上角是收藏/勾选，右下角是播放按钮，右上角是公开/拖拽角标
+   ============================================ */
+.cover-source-badges {
+    position: absolute;
+    left: 6px;
+    bottom: 6px;
+    z-index: 3;
+    display: flex;
+    gap: 4px;
+    pointer-events: none;
+}
+
+.cover-source-badge {
+    position: absolute;
+    left: 6px;
+    bottom: 6px;
+    z-index: 3;
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: .5px;
+    padding: 3px 5px;
+    border-radius: 4px;
+    color: #fff;
+    pointer-events: none;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .45);
+}
+
+/* 放在 .cover-source-badges 容器里时由容器统一排版 */
+.cover-source-badges .cover-source-badge {
+    position: static;
+    left: auto;
+    bottom: auto;
+}
+
+/* MF：中性深色，弱化存在感 */
+.cover-source-badge.mf {
+    background: rgba(0, 0, 0, .58);
+    border: 1px solid rgba(255, 255, 255, .3);
+}
+
+/* LX：蓝色高亮，和 MF 一眼区分 */
+.cover-source-badge.lx {
+    background: #1677ff;
+    border: 1px solid rgba(255, 255, 255, .38);
+}
+
+/* 手机端角标略小，避免占掉过多封面 */
+@media (max-width: 768px) {
+    .cover-source-badge {
+        font-size: 8px;
+        padding: 2px 4px;
+    }
+
+    .cover-source-badges,
+    .cover-source-badge {
+        left: 5px;
+        bottom: 5px;
+    }
+}

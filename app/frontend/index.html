@@ -1,0 +1,2472 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#1db954">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MusicHub">
+    <title>MusicHub</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <link rel="apple-touch-startup-image" href="icons/apple-touch-icon.png">
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+    <!-- 基础样式 -->
+    <link rel="stylesheet" href="css/base.css?v=17">
+    <!-- 立即应用主题和主题色，防止闪烁 -->
+    <script>
+        (function() {
+            // 应用主题模式
+            const theme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+
+            // 应用主题色
+            const color = localStorage.getItem('primary_color') || 'green';
+            const colorMap = {
+                green: { primary: '#1db954', light: '#1ed760', dark: '#1aa34a', glow: 'rgba(29, 185, 84, 0.3)' },
+                red: { primary: '#e74c3c', light: '#ff6b6b', dark: '#c0392b', glow: 'rgba(231, 76, 60, 0.3)' },
+                orange: { primary: '#e67e22', light: '#ff9f43', dark: '#d35400', glow: 'rgba(230, 126, 34, 0.3)' },
+                yellow: { primary: '#f1c40f', light: '#feca57', dark: '#f39c12', glow: 'rgba(241, 196, 15, 0.3)' },
+                blue: { primary: '#3498db', light: '#54a0ff', dark: '#2980b9', glow: 'rgba(52, 152, 219, 0.3)' },
+                purple: { primary: '#9b59b6', light: '#c56cf0', dark: '#8e44ad', glow: 'rgba(155, 89, 182, 0.3)' },
+                pink: { primary: '#fd79a8', light: '#ff9ff3', dark: '#e84393', glow: 'rgba(253, 121, 168, 0.3)' },
+                cyan: { primary: '#00cec9', light: '#81ecec', dark: '#00b894', glow: 'rgba(0, 206, 201, 0.3)' }
+            };
+            const colors = colorMap[color] || colorMap.green;
+            const root = document.documentElement;
+            root.style.setProperty('--primary-color', colors.primary);
+            root.style.setProperty('--primary-light', colors.light);
+            root.style.setProperty('--primary-dark', colors.dark);
+            root.style.setProperty('--primary-glow', colors.glow);
+        })();
+    </script>
+    <!-- 初始加载样式，防止界面闪烁 -->
+    <style>
+        /* 初始状态：登录页面和主应用都隐藏 */
+        #login-page, #app-wrapper {
+            display: none !important;
+        }
+        /* 页面加载完成后再由 JavaScript 控制显示 */
+        .auth-ready #login-page:not(.hidden),
+        .auth-ready #app-wrapper.logged-in {
+            display: flex !important;
+        }
+        .auth-ready #app-wrapper.logged-in {
+            display: block !important;
+        }
+    </style>
+    <link rel="stylesheet" href="css/layout.css?v=17">
+    <link rel="stylesheet" href="css/components.css?v=2">
+    <link rel="stylesheet" href="css/table.css?v=23">
+
+    <!-- 播放器模块 -->
+    <link rel="stylesheet" href="css/modules/player/index.css?v=17">
+    <link rel="stylesheet" href="css/modules/player/playlist.css?v=6">
+    <!-- 移动端样式已移除，使用纯自适应布局 -->
+
+
+    <!-- 下载模块 -->
+    <link rel="stylesheet" href="css/modules/download/index.css?v=3">
+
+    <!-- 本地音乐模块 -->
+    <link rel="stylesheet" href="css/modules/local/index.css?v=19">
+
+    <!-- 设置模块 -->
+    <link rel="stylesheet" href="css/modules/settings/index.css?v=3">
+    <link rel="stylesheet" href="css/modules/settings/notification.css">
+    <link rel="stylesheet" href="css/modules/settings/user.css">
+
+    <!-- 插件模块 -->
+    <link rel="stylesheet" href="css/modules/plugins/index.css?v=5">
+
+    <!-- 榜单模块 -->
+    <link rel="stylesheet" href="css/modules/toplist/index.css?v=4">
+
+    <!-- 订阅模块 -->
+    <link rel="stylesheet" href="css/modules/subscribe/index.css?v=2">
+
+    <!-- 搜索模块 -->
+    <link rel="stylesheet" href="css/modules/search/index.css">
+
+    <!-- 登录页面样式 -->
+    <link rel="stylesheet" href="css/login.css?v=2">
+
+    <!-- 移动端适配样式 -->
+    <link rel="stylesheet" href="css/mobile.css?v=37">
+    <!-- 播放详情页样式（放在mobile.css之后以确保优先级） -->
+    <link rel="stylesheet" href="css/modules/player/detail.css?v=13">
+    <!-- 统一媒体卡片样式（我的收藏 / 我的歌单 / 我的电台 / 电台） -->
+    <link rel="stylesheet" href="css/modules/media-cards.css?v=20">
+
+</head>
+
+<body>
+    <!-- 登录页面（初始隐藏，根据登录状态显示） -->
+    <div id="login-page" class="login-page hidden" style="display: none;">
+        <div class="login-card">
+            <div class="login-logo">
+                <div class="login-logo-icon">♪</div>
+                <div class="login-logo-text">MusicHub</div>
+            </div>
+            <h1 class="login-title">用户登录</h1>
+            <form class="login-form" id="login-form" onsubmit="handleLogin(event)">
+                <div class="login-form-group">
+                    <label for="username">用户名</label>
+                    <input type="text" id="username" name="username" placeholder="请输入用户名" required autocomplete="username">
+                </div>
+                <div class="login-form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" name="password" placeholder="请输入密码" required autocomplete="current-password">
+                </div>
+                <div id="login-error" class="login-error"></div>
+                <button type="submit" class="login-btn" id="login-btn">登录</button>
+            </form>
+            <div class="login-hint">
+                <p class="login-hint-text">
+                    默认管理员账号：<span class="login-hint-code">admin</span> / 密码：<span class="login-hint-code">admin</span>
+                </p>
+            </div>
+            <div class="login-footer">
+                MusicHub Beta
+            </div>
+        </div>
+    </div>
+
+    <!-- 主应用容器 -->
+    <div id="app-wrapper" class="app-wrapper">
+    <div class="app-container">
+        <!-- 左侧边栏 -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">♪</div>
+                <div class="logo-text-container">
+                    <div class="logo-text">MusicHub</div>
+                    <div class="logo-version">Beta</div>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <!-- 我的 -->
+                <div class="nav-section">
+                    <div class="nav-section-title">我的</div>
+                    <div class="nav-item" data-page="my-playlists" onclick="switchPage('my-playlists')">
+                        <div class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+                        </div>
+                        <div class="nav-item-text">我的歌单</div>
+                    </div>
+                    <div class="nav-item" data-page="recent" onclick="switchPage('recent')">
+                        <div class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                        <div class="nav-item-text">我的播放</div>
+                    </div>
+                    <div class="nav-item" data-page="favorites" onclick="switchPage('favorites')">
+                        <div class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                        </div>
+                        <div class="nav-item-text">我的收藏</div>
+                    </div>
+                    <div class="nav-item" data-page="my-radio" onclick="openMyRadio()">
+                        <div class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M4.9 19.1a10 10 0 0 1 0-14.2M19.1 4.9a10 10 0 0 1 0 14.2M7.8 16.2a6 6 0 0 1 0-8.4M16.2 7.8a6 6 0 0 1 0 8.4"/></svg>
+                        </div>
+                        <div class="nav-item-text">我的电台</div>
+                    </div>
+                </div>
+
+                <!-- MF -->
+                <div class="nav-section">
+                    <div class="nav-section-title" style="padding: 8px 16px 0;">MF</div>
+                    <div class="nav-item" data-page="toplist" onclick="switchPage('toplist')">
+                        <div class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                        </div>
+                        <div class="nav-item-text">排行榜</div>
+                    </div>
+                    <div class="nav-item" data-page="recommend" onclick="switchPage('recommend')">
+                        <div class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                        </div>
+                        <div class="nav-item-text">热门歌单</div>
+                    </div>
+                </div>
+
+                <!-- LX -->
+                <div class="nav-section">
+                    <div class="nav-section-title" style="padding: 8px 16px 0;">LX</div>
+                    <div class="nav-item" data-page="lx-toplist" onclick="switchPage('lx-toplist')">
+                        <div class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                        </div>
+                        <div class="nav-item-text">排行榜</div>
+                    </div>
+                    <div class="nav-item" data-page="lx-recommend" onclick="switchPage('lx-recommend')">
+                        <div class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                        </div>
+                        <div class="nav-item-text">热门歌单</div>
+                    </div>
+                </div>
+
+                <!-- 媒体库 -->
+                <div class="nav-section">
+                    <div class="nav-section-title" style="padding: 8px 16px 0;">媒体库</div>
+                    <div class="nav-item" data-page="local" onclick="switchPage('local')">
+                        <div class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        </div>
+                        <div class="nav-item-text">本地音乐</div>
+                    </div>
+                    <div class="nav-item" data-page="radio" onclick="goRadio()">
+                        <div class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M4.9 19.1a10 10 0 0 1 0-14.2M19.1 4.9a10 10 0 0 1 0 14.2M7.8 16.2a6 6 0 0 1 0-8.4M16.2 7.8a6 6 0 0 1 0 8.4"/></svg>
+                        </div>
+                        <div class="nav-item-text">电台</div>
+                    </div>
+                    <div class="nav-item" data-page="download" onclick="switchPage('download')">
+                        <div class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                        </div>
+                        <div class="nav-item-text">下载管理</div>
+                    </div>
+                    <div class="nav-item admin-only" data-page="subscribed-toplist" onclick="switchPage('subscribed-toplist')" style="display: none;">
+                        <div class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        </div>
+                        <div class="nav-item-text">下载订阅</div>
+                    </div>
+                </div>
+
+            </nav>
+            <!-- 侧边栏底部：用户菜单（登录/头像/设置/退出等） -->
+            <div class="sidebar-footer" id="sidebar-footer"></div>
+        </aside>
+
+        <!-- 移动端侧边栏遮罩 -->
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeMobileSidebar()"></div>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left" id="header-left">
+                    <!-- 移动端菜单按钮 -->
+                    <button class="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="打开菜单">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <div class="header-title" id="page-title">我的播放</div>
+                </div>
+                <div class="header-actions" id="header-actions" style="margin-left: auto;">
+                    <!-- 本地音乐扫描进度圆圈（扫描中显示；点击查看详情） -->
+                    <button class="local-scan-circle" id="local-scan-circle" type="button" style="display: none;" onclick="event.stopPropagation(); window.toggleLocalScanDetail && window.toggleLocalScanDetail();" title="本地音乐扫描进度">
+                        <svg viewBox="0 0 36 36"><circle class="scan-ring-bg" cx="18" cy="18" r="15.5"></circle><circle class="scan-ring-val" id="scan-ring-val" cx="18" cy="18" r="15.5"></circle></svg>
+                        <span class="scan-circle-pct" id="scan-circle-pct">0%</span>
+                    </button>
+                    <!-- 点击圆圈弹出的进度详情（右上角浮层），内含停止按钮 -->
+                    <div class="local-scan-detail" id="local-scan-detail" style="display: none;" onclick="event.stopPropagation();">
+                        <div class="scan-detail-title"><span class="scan-detail-dot"></span><span id="scan-detail-title-text">本地音乐扫描</span></div>
+                        <div class="scan-detail-line" id="scan-detail-line">准备中…</div>
+                        <div class="scan-detail-bar"><div id="scan-detail-fill"></div></div>
+                        <button class="scan-detail-stop" id="scan-detail-stop" type="button" style="display: none;" onclick="event.stopPropagation(); window.stopLocalScan && window.stopLocalScan();" title="停止扫描 / 补全">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg>
+                            <span>停止</span>
+                        </button>
+                    </div>
+                    <!-- 动态内容：用户菜单 -->
+                </div>
+                <!-- 设置按钮（已合并到用户菜单） -->
+                <div class="header-settings" style="display: none;">
+                    <button class="settings-btn" onclick="switchPage('settings')" title="设置" style="width: 36px; height: 36px; border-radius: 8px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                </div>
+            </header>
+
+            <div class="main-content-body">
+                <div class="content-area" id="page-container">
+                    <!-- 页面内容由 TemplateLoader 动态加载 -->
+                </div>
+
+                <!-- 设置页面 -->
+                <div class="page" id="page-settings">
+                    <div class="settings-wrapper">
+                        <!-- 顶部标签导航 -->
+                        <div class="settings-tabs">
+            <div class="settings-tab active" data-tab="general" onclick="switchSettingsTab('general')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m4.22-10.22l4.24-4.24M6.34 6.34L2.1 2.1m17.8 17.8l-4.24-4.24M6.34 17.66l-4.24 4.24M23 12h-6m-6 0H1m20.24-4.24l-4.24 4.24M6.34 6.34l-4.24-4.24"/></svg>
+                常规
+            </div>
+            <div class="settings-tab" data-tab="download" onclick="switchSettingsTab('download')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                下载播放
+            </div>
+                            <div class="settings-tab" data-tab="plugins" onclick="switchSettingsTab('plugins')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+                                MF 插件
+                            </div>
+                            <div class="settings-tab" data-tab="lx" onclick="switchSettingsTab('lx')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                LX 音源
+                            </div>
+                            <div class="settings-tab" data-tab="scheduled" onclick="switchSettingsTab('scheduled')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                定时任务
+                            </div>
+                            <div class="settings-tab" data-tab="notification" onclick="switchSettingsTab('notification')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                                通知
+                            </div>
+                            <div class="settings-tab" data-tab="cache" onclick="switchSettingsTab('cache')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                缓存
+                            </div>
+                            <div class="settings-tab" data-tab="enrich" onclick="switchSettingsTab('enrich')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 6h18M3 18h10"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                                歌词封面
+                            </div>
+                            <div class="settings-tab" data-tab="users" onclick="switchSettingsTab('users')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                用户与 API
+                            </div>
+                            <div class="settings-tab" data-tab="about" onclick="switchSettingsTab('about')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                                关于
+                            </div>
+                        </div>
+
+                        <!-- 设置内容区域 -->
+                        <div class="settings-content">
+                            <!-- 歌词与封面设置 -->
+                            <div class="settings-section" id="settings-enrich" style="display:none;">
+                                <div class="settings-group">
+                                    <div class="settings-group-title">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 6h18M3 18h10"/></svg>
+                                        歌词搜索插件
+                                    </div>
+                                    <div class="settings-item settings-item-fullwidth">
+                                        <div>
+                                            <div class="settings-item-label">搜索歌词用的插件（最多 3 个）</div>
+                                            <div class="settings-item-desc">按从上到下顺序依次搜索并取词；不选则按内置顺序（歌词插件 → 默认 → 其他音乐源）自动检索</div>
+                                        </div>
+                                        <div class="settings-item-control" style="display:block;">
+                                            <div class="plugin-picker" id="plugin-picker-lyric"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="settings-group">
+                                    <div class="settings-group-title">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                                        封面搜索插件
+                                    </div>
+                                    <div class="settings-item settings-item-fullwidth">
+                                        <div>
+                                            <div class="settings-item-label">搜索封面用的插件（最多 3 个）</div>
+                                            <div class="settings-item-desc">按从上到下顺序依次搜索封面；不选则按内置顺序（默认 → 其他音乐源）自动检索</div>
+                                        </div>
+                                        <div class="settings-item-control" style="display:block;">
+                                            <div class="plugin-picker" id="plugin-picker-cover"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="settings-group">
+                                    <div class="settings-group-title">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
+                                        歌手头像搜索插件
+                                    </div>
+                                    <div class="settings-item settings-item-fullwidth">
+                                        <div>
+                                            <div class="settings-item-label">搜索歌手头像用的插件（最多 3 个）</div>
+                                            <div class="settings-item-desc">按从上到下顺序依次搜索歌手头像；不配置则回退使用「封面搜索插件」</div>
+                                        </div>
+                                        <div class="settings-item-control" style="display:block;">
+                                            <div class="plugin-picker" id="plugin-picker-artist"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="settings-group">
+                                    <div class="settings-group-title">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                                        插件连通性测试
+                                    </div>
+                                    <div class="settings-item settings-item-fullwidth">
+                                        <div>
+                                            <div class="settings-item-label">输入歌名测试</div>
+                                            <div class="settings-item-desc">用当前配置的插件列表真实检索一次，判断该配置能否取到歌词/封面/专辑图/歌手头像（测试歌手封面时只用歌手框）</div>
+                                        </div>
+                                        <div class="settings-item-control" style="display:block;">
+                                            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
+                                                <span style="font-size:12px; color:var(--text-secondary); flex-shrink:0;">测试插件</span>
+                                                <select id="test-enrich-plugin" class="form-input" style="flex:1; min-width:180px;">
+                                                    <option value="">（按当前配置 / 自动）</option>
+                                                </select>
+                                            </div>
+                                            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                                                <input type="text" class="form-input" id="test-enrich-title" placeholder="歌名（测试歌手封面时可留空）" style="flex:1; min-width:140px;">
+                                                <input type="text" class="form-input" id="test-enrich-artist" placeholder="歌手（测试歌手封面时填写）" style="flex:1; min-width:140px;">
+                                                <button class="btn btn-primary" onclick="testEnrichPlugin('lyric')">测试歌词</button>
+                                                <button class="btn btn-secondary" onclick="testEnrichPlugin('cover')">测试封面</button>
+                                                <button class="btn btn-secondary" onclick="testEnrichPlugin('artist')">测试歌手封面</button>
+                                                <button class="btn btn-secondary" onclick="clearTestEnrich()">清空</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="test-enrich-result" class="settings-item settings-item-fullwidth" style="display:none;"></div>
+                                </div>
+                                <div class="settings-group">
+                                    <div class="settings-group-title">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                        缺失图片一键补全
+                                    </div>
+                                    <div class="settings-item settings-item-fullwidth">
+                                        <div>
+                                            <div class="settings-item-label">手动补全曲库缺失图片</div>
+                                            <div class="settings-item-desc">按类型后台逐项搜索并下载转 WebP 落库（只补缺失项，已补过的会跳过，不重复下载）。执行后稍等片刻并刷新对应列表即可看到。</div>
+                                        </div>
+                                        <div class="settings-item-control" style="display:block;">
+                                            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                                                <button class="btn btn-primary" onclick="fillMissingImages('cover')">补全封面</button>
+                                                <button class="btn btn-primary" onclick="fillMissingImages('artist')">补全歌手头像</button>
+                                                <button class="btn btn-primary" onclick="fillMissingImages('album')">补全专辑封面</button>
+                                            </div>
+                                            <div id="fill-images-tip" style="margin-top:8px; font-size:12px; color:var(--text-secondary);"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="settings-group">
+                                    <div class="settings-group-title">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                                        手动元数据补全
+                                    </div>
+                                    <div class="settings-item settings-item-fullwidth">
+                                        <div>
+                                            <div class="settings-item-label">修正艺术家 / 专辑 / 歌曲标题</div>
+                                            <div class="settings-item-desc">自动扫描时元数据取自「音频内嵌标签 → 目录路径」，核心字段齐全就不请求插件。少数目录或标签错乱的歌曲，可在这里手动用插件修正：「补缺失」只填空不覆盖，「覆盖修正」允许插件重写已有值（用户手动编辑过的字段不会被覆盖）。</div>
+                                        </div>
+                                        <div class="settings-item-control" style="display:block;">
+                                            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                                                <button class="btn btn-primary" onclick="fillMissingMetadata(false)">补全缺失元数据</button>
+                                                <button class="btn btn-primary" onclick="fillMissingMetadata(true)">覆盖修正元数据</button>
+                                            </div>
+                                            <div id="fill-metadata-tip" style="margin-top:8px; font-size:12px; color:var(--text-secondary);"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 缓存管理设置 -->
+                            <div class="settings-section" id="settings-cache" style="display: none;">
+                                <div class="settings-group">
+                                    <div class="settings-group-title">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                        本地文件缓存
+                                    </div>
+                                    <div class="settings-item settings-item-fullwidth">
+                                        <div>
+                                            <div class="settings-item-label">缓存上限</div>
+                                            <div class="settings-item-desc">封面与歌词本地缓存容量上限（音频不再缓存，统一按 URL 流式播放）</div>
+                                        </div>
+                                        <div class="settings-item-control">
+                                            <select class="form-input" id="setting-cache-limit" onchange="saveCacheLimit(this.value)">
+                                                <option value="100">100 MB</option>
+                                                <option value="300">300 MB</option>
+                                                <option value="500">500 MB</option>
+                                                <option value="1000" selected>1 GB</option>
+                                                <option value="2000">2 GB</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="settings-item settings-item-fullwidth" style="margin-top: 16px;">
+                                        <div style="flex: 1;">
+                                            <div class="settings-item-label">当前缓存</div>
+                                            <div class="cache-status">
+                                                <span id="cache-used">0 MB</span>
+                                                <span id="cache-item-count" style="margin-left: 12px; color: var(--text-secondary);">0 个文件</span>
+                                            </div>
+                                            <div class="cache-progress-bar" style="margin-top: 8px; height: 6px; background: var(--bg-tertiary); border-radius: 3px; overflow: hidden;">
+                                                <div id="cache-bar-fill" class="cache-progress-fill" style="height: 100%; width: 0%; background: var(--primary-color); transition: width 0.3s ease;"></div>
+                                            </div>
+                                        </div>
+                                        <div class="settings-item-control" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+                                            <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 16px;">
+                                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary);"><input type="checkbox" class="checkbox" id="clear-cache-artwork"> 封面</label>
+                                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary);"><input type="checkbox" class="checkbox" id="clear-cache-artist"> 歌手头像</label>
+                                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary);"><input type="checkbox" class="checkbox" id="clear-cache-radio"> 电台封面</label>
+                                            </div>
+                                            <button class="btn btn-danger" style="margin-top: 4px;" onclick="clearCache()">清理选中缓存</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="settings-group">
+                                    <div class="settings-group-title">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                                        数据库缓存
+                                    </div>
+                                    <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                                        <div class="settings-item settings-item-fullwidth" style="flex: 1; width: auto; min-width: 240px;">
+                                            <div style="flex: 1;">
+                                                <div class="settings-item-label">网络歌曲数据库缓存上限（首）</div>
+                                                <div class="settings-item-desc">网络歌曲元数据最大缓存条数，超出按 LRU 淘汰最久未访问；本地歌曲不淘汰</div>
+                                            </div>
+                                            <div class="settings-item-control">
+                                                <input type="number" class="form-input" id="setting-net-cache-max" min="100" max="20000" step="100" value="3000" onchange="saveNetCacheMax(this.value)" style="width: 130px;">
+                                            </div>
+                                        </div>
+                                        <div class="settings-item settings-item-fullwidth" style="flex: 1; width: auto; min-width: 240px; margin-top: 0;">
+                                            <div style="flex: 1;">
+                                                <div class="settings-item-label">最近播放数据库上限（首）</div>
+                                                <div class="settings-item-desc">每用户最近播放最多保留条数，超出删除最老记录（默认 100）</div>
+                                            </div>
+                                            <div class="settings-item-control">
+                                                <input type="number" class="form-input" id="setting-recent-play-max" min="10" max="5000" step="10" value="100" onchange="saveRecentPlayMax(this.value)" style="width: 130px;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="settings-item settings-item-fullwidth" style="margin-top: 16px;">
+                                        <div style="flex: 1;">
+                                            <div class="settings-item-label">清零数据</div>
+                                            <div class="cache-status">
+                                                <span>本地音乐库 <b id="local-db-songs">0</b> 首 · 网络歌曲 <b id="network-song-count">0</b> 首 · 电台 <b id="radio-station-count">0</b> 条</span>
+                                            </div>
+                                        </div>
+                                        <div class="settings-item-control" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+                                            <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 16px;">
+                                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary);"><input type="checkbox" class="checkbox" id="clear-data-local"> 本地音乐库数据</label>
+                                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary);"><input type="checkbox" class="checkbox" id="clear-data-network"> 网络歌曲数据</label>
+                                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary);"><input type="checkbox" class="checkbox" id="clear-data-radio"> 电台数据</label>
+                                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary);"><input type="checkbox" class="checkbox" id="clear-data-playhistory"> 播放数据（所有用户）</label>
+                                            </div>
+                                            <button class="btn btn-danger" style="margin-top: 4px;" onclick="clearSelectedData()">清理选中数据</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 常规设置 -->
+                            <div class="settings-section active" id="settings-general">
+                                <!-- OpenList（strm 播放）配置组 -->
+                                <div class="settings-group">
+                                    <div class="settings-group-title">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                                        OpenList（strm 播放）配置
+                                    </div>
+                                    <div class="settings-item settings-item-fullwidth">
+                                        <div>
+                                            <div class="settings-item-label">内网基地址</div>
+                                            <div class="settings-item-desc">OpenList 内网直连地址（如 http://192.168.2.6:5244）。客户端在内网时，strm 播放 302 跳此地址直连</div>
+                                        </div>
+                                        <div class="settings-item-control">
+                                            <input type="text" class="form-input" id="setting-openlist-local" placeholder="http://内网IP:端口" style="min-width: 260px;">
+                                        </div>
+                                    </div>
+                                    <div class="settings-item settings-item-fullwidth">
+                                        <div>
+                                            <div class="settings-item-label">外网基地址</div>
+                                            <div class="settings-item-desc">OpenList 外网穿透地址（如 http://xxx.cpolar.top）。客户端在外网时，strm 302 跳「外网基地址 + 文件名路径」；若外网需 token，可一并拼到地址里</div>
+                                        </div>
+                                        <div class="settings-item-control">
+                                            <input type="text" class="form-input" id="setting-openlist-public" placeholder="http://外网穿透地址" style="min-width: 260px;">
+                                        </div>
+                                        <div style="margin-top: 8px;">
+                                            <button class="btn btn-primary" onclick="saveOpenlistConfigSetting()">保存</button>
+                                        </div>
+                                    </div>
+                                    <div class="settings-item-desc" style="padding: 8px 16px; background: var(--bg-tertiary); border-radius: 8px; margin-top: 8px;">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                                        strm 文件内容为一行完整内网直链；播放时按客户端 IP 自动选「内网基地址」或「外网基地址 + 文件名路径」302 跳转，服务端不代理音频流。
+                                    </div>
+                                </div>
+
+                                <!-- 客户端直连（307）开关组 -->
+                                <div class="settings-group">
+                                    <div class="settings-group-title">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                        客户端直连（307）
+                                    </div>
+                                    <div class="settings-item settings-item-fullwidth">
+                                        <div>
+                                            <div class="settings-item-label">播放直连（307）</div>
+                                            <div class="settings-item-desc">开启：箭头音乐等客户端播放网络歌曲时，服务器返回 307 直链，客户端直连音频 CDN；关闭：服务器代理转发音频流</div>
+                                        </div>
+                                        <div class="settings-item-control">
+                                            <input type="checkbox" class="checkbox" id="setting-stream-redirect" onchange="saveRedirectModeSetting('stream', this.checked)">
+                                        </div>
+                                    </div>
+                                    <div class="settings-item settings-item-fullwidth" style="margin-top: 16px;">
+                                        <div>
+                                            <div class="settings-item-label">封面直连（307）</div>
+                                            <div class="settings-item-desc">开启：客户端请求网络歌曲封面时，服务器返回 307 直链，客户端直连图片源；关闭：服务器下载封面并落盘缓存后返回（默认）</div>
+                                            <div class="settings-item-desc" style="padding: 8px 16px; background: var(--bg-tertiary); border-radius: 8px; margin-top: 8px;">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 6px;"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                                注意：部分第三方 Subsonic 安卓客户端（如箭头音乐）不支持图片 307 重定向，开启后可能出现封面空白；如遇此情况请关闭此开关，切换为后端代理模式。
+                                            </div>
+                                        </div>
+                                        <div class="settings-item-control">
+                                            <input type="checkbox" class="checkbox" id="setting-cover-redirect" onchange="saveRedirectModeSetting('cover', this.checked)">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 系统设置组（调试日志 / 重置设置） -->
+                                <div class="settings-group">
+                                    <div class="settings-group-title">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                                        系统
+                                    </div>
+                                    <div class="settings-item settings-item-fullwidth">
+                                        <div>
+                                            <div class="settings-item-label">调试日志</div>
+                                            <div class="settings-item-desc">开启后记录详细的 DEBUG 日志便于排查问题；关闭后仅保留重要日志</div>
+                                        </div>
+                                        <div class="settings-item-control">
+                                            <input type="checkbox" class="checkbox" id="setting-debug-log" onchange="saveDebugLogSetting(this.checked)">
+                                        </div>
+                                    </div>
+                                    <div class="settings-item settings-item-fullwidth" style="margin-top: 16px;">
+                                        <div>
+                                            <div class="settings-item-label">重置所有设置</div>
+                                            <div class="settings-item-desc">恢复所有设置为默认值</div>
+                                        </div>
+                                        <div class="settings-item-control">
+                                            <button class="btn btn-danger" onclick="resetAllSettings()">重置</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 外观设置组（移到常规最后） -->
+                                <div class="settings-group">
+                                    <div class="settings-group-title">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                                        外观
+                                    </div>
+                                    <div class="settings-grid">
+                                        <div class="settings-item">
+                                            <div>
+                                                <div class="settings-item-label">主题</div>
+                                                <div class="settings-item-desc">选择应用主题风格</div>
+                                            </div>
+                                            <div class="settings-item-control">
+                                                <select class="form-input" id="setting-theme" onchange="saveThemeSetting(this.value)">
+                                                    <option value="dark">深色</option>
+                                                    <option value="light">浅色</option>
+                                                    <option value="auto">跟随系统</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="settings-item">
+                                            <div>
+                                                <div class="settings-item-label">主题色</div>
+                                                <div class="settings-item-desc">选择应用主题颜色</div>
+                                            </div>
+                                            <div class="settings-item-control">
+                                                <select class="form-input" id="setting-primary-color" onchange="savePrimaryColorSetting(this.value)">
+                                                    <option value="green">绿色</option>
+                                                    <option value="red">红色</option>
+                                                    <option value="orange">橙色</option>
+                                                    <option value="yellow">黄色</option>
+                                                    <option value="blue">蓝色</option>
+                                                    <option value="purple">紫色</option>
+                                                    <option value="pink">粉色</option>
+                                                    <option value="cyan">青色</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 下载设置 -->
+                            <div class="settings-section" id="settings-download" style="display: none;">
+                                <!-- 播放策略（从常规页移入） -->
+                                <div class="settings-group">
+                                    <div class="settings-group-title">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                                        播放策略
+                                    </div>
+                                    <div class="settings-item settings-item-fullwidth">
+                                        <div>
+                                            <div class="settings-item-label">本地曲库优先播放</div>
+                                            <div class="settings-item-desc">开启后，播放 QQ / 酷我 / 酷狗等插件歌曲时，会用「歌名 + 歌手」匹配 NAS 本地曲库，命中则直接播放本地音频文件（播放器显示「本地」）；未命中或异常时自动回退插件网络音频。本地音乐库本身不受此开关影响。默认关闭。</div>
+                                        </div>
+                                        <div class="settings-item-control">
+                                            <input type="checkbox" class="checkbox" id="setting-local-library-priority" onchange="saveLocalLibraryPrioritySetting(this.checked)">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 音质设置组（从常规页移入） -->
+                                <div class="settings-group">
+                                    <div class="settings-group-title">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                        音质
+                                    </div>
+                                    <div class="settings-item settings-item-fullwidth">
+                                        <div>
+                                            <div class="settings-item-label">默认音质</div>
+                                            <div class="settings-item-desc">播放歌曲时的默认音质（可为单个歌曲单独设置）</div>
+                                        </div>
+                                        <div class="settings-item-control">
+                                            <select class="form-input" id="setting-quality" onchange="saveQualitySetting(this.value)">
+                                                <option value="low">低音质</option>
+                                                <option value="standard">标准音质</option>
+                                                <option value="high">高音质</option>
+                                                <option value="super">超高音质</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 下载任务设置 -->
+                                <div class="settings-group">
+                                    <div class="settings-group-title">下载任务</div>
+                                    <div class="settings-grid">
+                                        <div class="settings-item">
+                                            <div>
+                                                <div class="settings-item-label">同时下载数量</div>
+                                                <div class="settings-item-desc">同时进行的下载任务数</div>
+                                            </div>
+                                            <div class="settings-item-control">
+                                                <select class="form-input" id="setting-download-concurrency" onchange="saveDownloadSetting('concurrency', this.value)">
+                                                    <option value="1" selected>1</option>
+                                                    <option value="2">2</option>
+                                                    <option value="3">3</option>
+                                                    <option value="5">5</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="settings-item">
+                                            <div>
+                                                <div class="settings-item-label">同时下载歌词</div>
+                                                <div class="settings-item-desc">下载歌曲时同时下载歌词文件</div>
+                                            </div>
+                                            <div class="settings-item-control">
+                                                <input type="checkbox" class="checkbox" id="setting-download-lyrics" onchange="saveDownloadSetting('downloadLyrics', this.checked)">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 下载音质设置 -->
+                                <div class="settings-group">
+                                    <div class="settings-group-title">下载音质</div>
+                                    <div class="settings-grid">
+                                        <div class="settings-item">
+                                            <div>
+                                                <div class="settings-item-label">优先音质</div>
+                                                <div class="settings-item-desc">下载时优先选择的音质</div>
+                                            </div>
+                                            <div class="settings-item-control">
+                                                <select class="form-input" id="setting-download-quality" onchange="saveDownloadSetting('quality', this.value)">
+                                                    <option value="low">低音质</option>
+                                                    <option value="standard" selected>标准音质</option>
+                                                    <option value="high">高音质</option>
+                                                    <option value="super">超高音质</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="settings-item">
+                                            <div>
+                                                <div class="settings-item-label">音质缺失处理</div>
+                                                <div class="settings-item-desc">优先音质不可用时如何获取</div>
+                                            </div>
+                                            <div class="settings-item-control">
+                                                <select class="form-input" id="setting-quality-fallback" onchange="saveDownloadSetting('qualityFallback', this.value)">
+                                                    <option value="lower">下载更低音质</option>
+                                                    <option value="higher">下载更高音质</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 下载排除设置 -->
+                                <div class="settings-group">
+                                    <div class="settings-group-title">下载排除</div>
+                                    <div class="settings-grid">
+                                        <div class="settings-item" style="flex-direction: column; align-items: stretch;">
+                                            <div class="settings-item-label">排除歌手</div>
+                                            <div class="settings-item-desc">这些歌手的歌曲不会被下载（多个用逗号、中文逗号或换行分隔）</div>
+                                            <textarea id="setting-exclude-artists" class="form-input" rows="2" placeholder="例如：周杰伦, 林俊杰"></textarea>
+                                        </div>
+                                        <div class="settings-item" style="flex-direction: column; align-items: stretch;">
+                                            <div class="settings-item-label">排除语言</div>
+                                            <div class="settings-item-desc">勾选的语言不会被自动/定时下载（仅对自动下载和定时任务有效，手动下载不受影响）</div>
+                                            <div id="setting-exclude-languages" class="exclude-lang-options" style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px;">
+                                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" class="exclude-lang-checkbox" value="国语"> 国语</label>
+                                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" class="exclude-lang-checkbox" value="粤语"> 粤语</label>
+                                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" class="exclude-lang-checkbox" value="英语"> 英语</label>
+                                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" class="exclude-lang-checkbox" value="日语"> 日语</label>
+                                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" class="exclude-lang-checkbox" value="韩语"> 韩语</label>
+                                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" class="exclude-lang-checkbox" value="法语"> 法语</label>
+                                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" class="exclude-lang-checkbox" value="德语"> 德语</label>
+                                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" class="exclude-lang-checkbox" value="西班牙语"> 西班牙语</label>
+                                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" class="exclude-lang-checkbox" value="其他"> 其他</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary" style="margin-top: 10px;" onclick="saveExcludeSettings()">保存排除规则</button>
+                                </div>
+                            </div>
+
+                            <!-- LX 音源（洛雪） -->
+                            <div class="settings-section" id="settings-lx" style="display: none;">
+                                <div class="settings-group plugin-management-fullwidth">
+                                    <div class="plugin-management-header">
+                                        <div class="plugin-management-title">LX 音源</div>
+                                        <div class="plugin-management-actions">
+                                            <button class="btn btn-secondary" onclick="showLxSourceFromFile()">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 6px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                                从本地文件导入
+                                            </button>
+                                            <button class="btn btn-secondary" onclick="showLxSourceFromUrl()">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                                从网络地址导入
+                                            </button>
+                                            <button class="btn btn-primary" onclick="showLxSourcePaste()">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 6px;"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                                                粘贴脚本导入
+                                            </button>
+                                            <button class="btn btn-secondary" onclick="loadLxSources()">刷新</button>
+                                        </div>
+                                    </div>
+                                    <div style="padding: 6px 0 16px; color: var(--text-secondary); font-size: 13px; line-height: 1.7;">
+                                        用于给左侧「LX」专区的排行榜 / 热门歌单歌曲提供播放解析（落雪音乐自定义音源，musicUrl）。<br>
+                                        支持平台：酷我 / 酷狗 / QQ音乐 / 网易云 / 咪咕。音源脚本以 Node 沙箱运行，请只导入<b>可信来源</b>的音源。<br>
+                                        <b>可安装并同时启用多个音源</b>：同名文件不会覆盖，会自动另存为 <code>xxx(2).js</code>，多个音源在列表中并排共存；
+                                        播放按列表顺序解析，某个音源失败时自动切换到下一个已启用音源；
+                                        播放器上的<b>「切换音源」</b>可指定优先使用哪个音源（优先级会按平台记住）。
+                                    </div>
+                                    <div id="lx-source-table-container">
+                                        <div class="plugin-table-wrapper">
+                                            <table class="plugin-data-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width: 60px; text-align: center;">启用</th>
+                                                        <th style="width: 220px;">名称</th>
+                                                        <th style="width: 110px;">版本</th>
+                                                        <th style="width: 150px;">作者</th>
+                                                        <th style="width: 220px;">支持平台</th>
+                                                        <th style="width: 110px;">状态</th>
+                                                        <th style="width: 320px; text-align: left;">操作</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="lx-source-table-body">
+                                                    <!-- 音源数据由 JS 动态生成 -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="empty-state" id="lx-source-empty-state" style="display: none;">
+                                            <div class="empty-icon">🎧</div>
+                                            <div class="empty-text">暂无 LX 音源，点击上方按钮导入</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 插件设置 -->
+                            <div class="settings-section" id="settings-plugins" style="display: none;">
+                                <div class="settings-group plugin-management-fullwidth">
+                                    <div class="plugin-management-header">
+                                        <div class="plugin-management-title">插件管理</div>
+                                        <div class="plugin-management-actions">
+                                            <button class="btn btn-secondary" onclick="showInstallFromFileModal()">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 6px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                                                从本地文件安装
+                                            </button>
+                                            <button class="btn btn-secondary" onclick="showInstallFromUrlModal()">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                                从网络安装插件
+                                            </button>
+                                            <button class="btn btn-primary" onclick="updateAllPlugins()">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 6px;"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                                                一键更新全部
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div id="settings-plugin-table-container">
+                                        <div class="plugin-table-wrapper">
+                                            <table class="plugin-data-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width: 60px; text-align: center;">启用</th>
+                                                        <th style="width: 200px;">来源</th>
+                                                        <th style="width: 100px;">版本号</th>
+                                                        <th style="width: 200px;">作者</th>
+                                                        <th style="width: 150px;">插件名字</th>
+                                                        <th style="width: 300px; text-align: left;">操作</th>
+                                                        <th style="width: 200px;">备注<span style="color: var(--text-tertiary); font-size: 11px; font-weight: normal;">（发现里显示的名字）</span></th>
+                                                        <th style="width: auto;">网络地址<span style="color: var(--text-tertiary); font-size: 11px; font-weight: normal;">（更新插件地址）</span></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="plugin-table-body">
+                                                    <!-- 插件数据由JS动态生成 -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="empty-state" id="plugin-empty-state" style="display: none;">
+                                            <div class="empty-icon">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 64px; height: 64px;"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+                                            </div>
+                                            <div class="empty-text">暂无插件，点击上方按钮安装</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 定时任务设置 -->
+                            <div class="settings-section" id="settings-scheduled" style="display: none;">
+                                <div class="scheduled-tasks-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; width: 100%; box-sizing: border-box;">
+
+                                    <!-- 插件自动更新卡片 -->
+                                    <div class="scheduled-task-card" style="background: var(--surface-color); border-radius: 12px; padding: 24px; border: 1px solid var(--divider-color);">
+                                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                                            <div style="width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); display: flex; align-items: center; justify-content: center;">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="width: 24px; height: 24px;"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+                                            </div>
+                                            <div>
+                                                <div style="font-size: 16px; font-weight: 600;">插件自动更新</div>
+                                                <div style="font-size: 12px; color: var(--text-secondary);">自动检查并更新插件</div>
+                                            </div>
+                                            <label class="notification-toggle-switch" style="margin-left: auto;">
+                                                <input type="checkbox" id="scheduled-plugin-enabled" onchange="toggleScheduledPlugin(this.checked)">
+                                                <span class="notification-toggle-slider"></span>
+                                            </label>
+                                        </div>
+                                        <div style="margin-bottom: 16px;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                <span style="font-size: 13px; color: var(--text-secondary);">执行规则</span>
+                                                <span id="scheduled-plugin-cron-display" style="font-size: 13px; font-family: monospace; background: var(--bg-tertiary); padding: 2px 8px; border-radius: 4px;">0 0 * * *</span>
+                                            </div>
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                <span style="font-size: 13px; color: var(--text-secondary);">下次执行</span>
+                                                <span id="scheduled-plugin-next" style="font-size: 13px;">每天 00:00</span>
+                                            </div>
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <span style="font-size: 13px; color: var(--text-secondary);">上次更新</span>
+                                                <span id="scheduled-plugin-last" style="font-size: 13px;">从未执行</span>
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; gap: 8px;">
+                                            <button class="btn btn-secondary" style="flex: 1; display: flex; align-items: center; justify-content: center; height: 32px; padding: 0; font-size: 13px;" onclick="editScheduledPluginCron()">编辑规则</button>
+                                            <button class="btn btn-primary" style="flex: 1; display: flex; align-items: center; justify-content: center; height: 32px; padding: 0; font-size: 13px;" onclick="runScheduledPluginNow()">立即执行</button>
+                                            <button class="btn btn-secondary" id="scheduled-plugin-notify-btn" style="width: 40px; padding: 0; display: flex; align-items: center; justify-content: center;" onclick="toggleScheduledPluginNotify()" title="发送通知开关">
+                                                <svg id="scheduled-plugin-notify-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- 下载订阅卡片 -->
+                                    <div class="scheduled-task-card" style="background: var(--surface-color); border-radius: 12px; padding: 24px; border: 1px solid var(--divider-color);">
+                                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                                            <div style="width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center;">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="width: 24px; height: 24px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                            </div>
+                                            <div>
+                                                <div style="font-size: 16px; font-weight: 600;">下载订阅</div>
+                                                <div style="font-size: 12px; color: var(--text-secondary);">自动下载已订阅的歌曲</div>
+                                            </div>
+                                            <label class="notification-toggle-switch" style="margin-left: auto;">
+                                                <input type="checkbox" id="scheduled-subscribe-enabled" onchange="toggleScheduledSubscribe(this.checked)">
+                                                <span class="notification-toggle-slider"></span>
+                                            </label>
+                                        </div>
+                                        <div style="margin-bottom: 16px;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                <span style="font-size: 13px; color: var(--text-secondary);">执行规则</span>
+                                                <span id="scheduled-subscribe-cron-display" style="font-size: 13px; font-family: monospace; background: var(--bg-tertiary); padding: 2px 8px; border-radius: 4px;">0 0 * * *</span>
+                                            </div>
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                <span style="font-size: 13px; color: var(--text-secondary);">下次执行</span>
+                                                <span id="scheduled-subscribe-next" style="font-size: 13px;">每天 00:00</span>
+                                            </div>
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <span style="font-size: 13px; color: var(--text-secondary);">上次更新</span>
+                                                <span id="scheduled-subscribe-last" style="font-size: 13px;">从未执行</span>
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; gap: 8px;">
+                                            <button class="btn btn-secondary" style="flex: 1; display: flex; align-items: center; justify-content: center; height: 32px; padding: 0; font-size: 13px;" onclick="editScheduledSubscribeCron()">编辑规则</button>
+                                            <button class="btn btn-primary" style="flex: 1; display: flex; align-items: center; justify-content: center; height: 32px; padding: 0; font-size: 13px;" onclick="runScheduledSubscribeNow()">立即下载</button>
+                                            <button class="btn btn-secondary" id="scheduled-subscribe-notify-btn" style="width: 40px; padding: 0; display: flex; align-items: center; justify-content: center;" onclick="toggleScheduledSubscribeNotify()" title="发送通知开关">
+                                                <svg id="scheduled-subscribe-notify-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+
+
+                                </div>
+                            </div>
+
+                            <!-- 通知设置（企业微信应用 + 回调） -->
+                            <div class="settings-section" id="settings-notification" style="display: none;">
+                                <!-- Webhook 通知（群机器人） -->
+                                <div class="settings-group notification-settings">
+                                    <div class="notification-settings-header">
+                                        <div class="notification-settings-icon">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                                        </div>
+                                        <div class="notification-settings-title">
+                                            <div class="notification-settings-title-text">Webhook 通知</div>
+                                            <div class="notification-settings-title-desc">配置企业微信Webhook通知</div>
+                                        </div>
+                                    </div>
+                                    <div class="notification-settings-content">
+                                        <div class="notification-toggle-row">
+                                            <span class="notification-toggle-label">启用通知</span>
+                                            <label class="notification-toggle-switch">
+                                                <input type="checkbox" id="setting-notification-enabled">
+                                                <span class="notification-toggle-slider"></span>
+                                            </label>
+                                            <span class="notification-toggle-status" id="notification-status-text">已启用</span>
+                                            <span class="notification-toggle-hint">开启后将发送企业微信通知</span>
+                                        </div>
+                                        <div class="notification-input-group">
+                                            <label class="notification-input-label">Webhook 地址</label>
+                                            <div class="notification-input-wrapper">
+                                                <svg class="notification-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                                                <input type="text" id="setting-wecom-url" class="notification-input" placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=...">
+                                            </div>
+                                            <div class="notification-input-hint">在企业微信群机器人设置中获取</div>
+                                        </div>
+                                        <div class="notification-input-group">
+                                            <label class="notification-input-label">通知跳转链接</label>
+                                            <div class="notification-input-wrapper">
+                                                <svg class="notification-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                                                <input type="text" id="setting-notification-url" class="notification-input" placeholder="https://example.com/musichub">
+                                            </div>
+                                            <div class="notification-input-hint">点击通知消息后跳转的地址，留空则不设置链接</div>
+                                        </div>
+                                        <div class="notification-actions">
+                                            <button class="notification-btn notification-btn-primary" onclick="saveNotificationSettings()">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                                                保存配置
+                                            </button>
+                                            <button class="notification-btn notification-btn-secondary" onclick="testNotification()">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+                                                测试
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 企业微信应用配置 -->
+                                <div class="notification-settings">
+                                    <div class="notification-settings-header">
+                                        <div class="notification-settings-icon">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                                        </div>
+                                        <div class="notification-settings-title">
+                                            <div class="notification-settings-title-text">企业微信应用通知</div>
+                                            <div class="notification-settings-title-desc">配置企业微信自建应用，接收系统操作通知，并通过底部菜单远程触发任务</div>
+                                        </div>
+                                    </div>
+                                    <div class="notification-settings-content">
+                                        <div class="notification-toggle-row">
+                                            <span class="notification-toggle-label">启用应用通知</span>
+                                            <label class="notification-toggle-switch">
+                                                <input type="checkbox" id="wecom-app-enabled">
+                                                <span class="notification-toggle-slider"></span>
+                                            </label>
+                                            <span class="notification-toggle-status" id="wecom-app-enabled-status">已禁用</span>
+                                            <span class="notification-toggle-hint">开启后，系统任务（订阅更新 / 插件更新 / 清理缓存）及网络歌单定时刷新通知会通过企业微信应用推送</span>
+                                        </div>
+                                        <div class="notification-input-group">
+                                            <label class="notification-input-label">企业ID（CorpID）</label>
+                                            <div class="notification-input-wrapper">
+                                                <svg class="notification-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 12-5v0a5 5 0 0 1 5 5v4"/></svg>
+                                                <input class="notification-input" id="wecom-app-corpid" placeholder="如 ww1234567890abcdef">
+                                            </div>
+                                            <span class="notification-input-hint">企业微信管理后台「我的企业」页面获取</span>
+                                        </div>
+                                        <div class="notification-input-group">
+                                            <label class="notification-input-label">应用Secret</label>
+                                            <div class="notification-input-wrapper">
+                                                <svg class="notification-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 12-5v0a5 5 0 0 1 5 5v4"/></svg>
+                                                <input class="notification-input" id="wecom-app-corpsecret" type="text" autocomplete="off" spellcheck="false" style="font-family: Consolas, Menlo, monospace; letter-spacing: 0.3px; border-color: var(--primary-color, #3b82f6);" placeholder="应用管理 → 某应用详情 → Secret">
+                                            </div>
+                                            <span class="notification-input-hint">企业微信应用详情页获取，仅保存在服务端</span>
+                                        </div>
+                                        <div class="notification-input-group">
+                                            <label class="notification-input-label">应用AgentId</label>
+                                            <div class="notification-input-wrapper">
+                                                <svg class="notification-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg>
+                                                <input class="notification-input" id="wecom-app-agentid" placeholder="如 1000002">
+                                            </div>
+                                            <span class="notification-input-hint">企业微信应用详情页的 AgentId</span>
+                                        </div>
+                                        <div class="notification-input-group">
+                                            <label class="notification-input-label">接收人（UserID）</label>
+                                            <div class="notification-input-wrapper">
+                                                <svg class="notification-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                                <input class="notification-input" id="wecom-app-touser" placeholder="@all">
+                                            </div>
+                                            <span class="notification-input-hint">留空或填 @all 表示推送给应用可见范围内全体成员</span>
+                                        </div>
+                                        <div class="notification-actions">
+                                            <button class="notification-btn notification-btn-primary" id="wecom-app-save" onclick="saveWecomApp()">保存配置</button>
+                                            <button class="notification-btn notification-btn-secondary" id="wecom-app-test" onclick="testWecomApp()">发送测试</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 回调配置 -->
+                                <div class="notification-settings">
+                                    <div class="notification-settings-header">
+                                        <div class="notification-settings-icon">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                        </div>
+                                        <div class="notification-settings-title">
+                                            <div class="notification-settings-title-text">回调配置</div>
+                                            <div class="notification-settings-title-desc">用于接收企业微信菜单点击事件，在企业微信后台「应用 → 接收消息 → 设置API接收」中填写</div>
+                                        </div>
+                                    </div>
+                                    <div class="notification-settings-content">
+                                        <div class="notification-input-group">
+                                            <label class="notification-input-label">回调URL（填入企业微信后台，可自定义域名）</label>
+                                            <div class="notification-input-wrapper">
+                                                <svg class="notification-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                                                <input class="notification-input" id="wecom-app-callback-url" placeholder="如 https://your-domain.com/api/wecom-app/callback">
+                                            </div>
+                                            <span class="notification-input-hint">需公网 HTTPS 且端口为 80/443（企业微信硬性要求），用于填入企业微信后台「接收消息 → 设置API接收」；留空则按当前站点地址（已自动去除非标准端口）生成</span>
+                                        </div>
+                                        <div class="notification-input-group">
+                                            <label class="notification-input-label">Token</label>
+                                            <div class="notification-input-wrapper">
+                                                <svg class="notification-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.07 7.07a2 2 0 1 1-2.83-2.83l7.07-7.07"/><path d="M3 10v4a2 2 0 0 0 2 2h2"/><path d="M17 14h2a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H5"/></svg>
+                                                <input class="notification-input" id="wecom-app-token" placeholder="与企业微信后台填写的 Token 一致">
+                                            </div>
+                                            <span class="notification-input-hint">在企业微信后台「接收消息」设置的 Token</span>
+                                        </div>
+                                        <div class="notification-input-group">
+                                            <label class="notification-input-label">EncodingAESKey</label>
+                                            <div class="notification-input-wrapper">
+                                                <svg class="notification-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 12-5v0a5 5 0 0 1 5 5v4"/></svg>
+                                                <input class="notification-input" id="wecom-app-encodingaeskey" placeholder="43 位 EncodingAESKey">
+                                            </div>
+                                            <span class="notification-input-hint">在企业微信后台「接收消息」设置的 EncodingAESKey（43 字符）</span>
+                                        </div>
+                                        <div class="notification-actions">
+                                            <button class="notification-btn notification-btn-primary" id="wecom-app-callback-save" onclick="saveWecomApp()">保存配置</button>
+                                            <button class="notification-btn notification-btn-secondary" id="wecom-app-menu" onclick="createWecomMenu()">创建菜单</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 操作状态提示 -->
+                                <div id="wecom-app-status" style="margin-top: 14px; font-size: 14px; min-height: 20px;"></div>
+
+                                <!-- 菜单说明 -->
+                                <div class="notification-settings" style="margin-top: 20px;">
+                                    <div class="notification-settings-header">
+                                        <div class="notification-settings-icon">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                                        </div>
+                                        <div class="notification-settings-title">
+                                            <div class="notification-settings-title-text">企业微信底部菜单</div>
+                                            <div class="notification-settings-title-desc">点击「创建菜单」后，在企业微信会话底部会出现如下菜单，点击即触发对应任务</div>
+                                        </div>
+                                    </div>
+                                    <div class="notification-settings-content" style="font-size: 14px; color: var(--text-secondary); line-height: 1.9;">
+                                        <div>⚙️ <b>系统</b>（父菜单）</div>
+                                        <div style="padding-left: 18px;">• 清理缓存（MENU_CLEAR_CACHE）</div>
+                                        <div style="padding-left: 18px;">• 插件更新（MENU_PLUGIN_UPDATE）</div>
+                                        <div>📥 <b>下载</b>（父菜单）</div>
+                                        <div style="padding-left: 18px;">• 订阅下载（MENU_SUB_DOWNLOAD）</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 关于设置 -->
+                            <div class="settings-section" id="settings-about" style="display: none;">
+                                <div class="settings-group" style="text-align: center; padding: 40px 28px;">
+                                    <div style="font-size: 64px; margin-bottom: 16px;">🎵</div>
+                                    <div style="font-size: 28px; font-weight: 600; margin-bottom: 8px;">MusicHub</div>
+                                    <div style="color: var(--text-secondary); margin-bottom: 24px;">版本 Beta</div>
+                                    <div style="color: var(--text-tertiary); font-size: 14px; line-height: 1.6; max-width: 400px; margin: 0 auto;">
+                                        MusicHub 是一个开源的音乐播放器，支持多种音源插件，提供流畅的音乐播放体验。
+                                    </div>
+                                </div>
+                                <div class="settings-group">
+                                    <div class="settings-group-title">相关信息</div>
+                                    <div class="settings-grid">
+                                        <div class="settings-item">
+                                            <div class="settings-item-label">官方网站</div>
+                                            <div class="settings-item-control">
+                                                <a href="#">https://musichub.app</a>
+                                            </div>
+                                        </div>
+                                        <div class="settings-item">
+                                            <div class="settings-item-label">GitHub</div>
+                                            <div class="settings-item-control">
+                                                <a href="#">github.com/musichub</a>
+                                            </div>
+                                        </div>
+                                        <div class="settings-item">
+                                            <div class="settings-item-label">开源协议</div>
+                                            <div class="settings-item-control">
+                                                <span>GPL-3.0</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 用户与 API 设置 -->
+                            <div class="settings-section" id="settings-users" style="display: none;">
+
+                                <!-- OpenSubsonic API 秘钥设置组 -->
+                                <div class="settings-group">
+                                    <div class="settings-group-title">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                        OpenSubsonic API 秘钥
+                                    </div>
+                                    <div class="settings-item settings-item-fullwidth">
+                                        <div>
+                                            <div class="settings-item-label">API 秘钥</div>
+                                            <div class="settings-item-desc">OpenSubsonic 扩展 apiKeyAuthentication：客户端可用 API 秘钥直接登录，无需用户名密码，重启后依然有效</div>
+                                        </div>
+                                        <div class="settings-item-control">
+                                            <input type="text" class="form-input" id="setting-api-key" placeholder="点击「生成」或手动输入 API 秘钥" style="min-width: 220px;">
+                                        </div>
+                                        <div style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;">
+                                            <button class="btn" onclick="generateApiKey()" title="生成随机秘钥">生成</button>
+                                            <button class="btn btn-primary" onclick="saveApiKeySetting()">保存</button>
+                                        </div>
+                                    </div>
+                                    <div class="settings-item-desc" style="padding: 8px 16px; background: var(--bg-tertiary); border-radius: 8px; margin-top: 8px;">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                                        使用方式：请求时在 URL 加 <code>apiKey=此秘钥</code> 即可（与用户名/密码互斥）。例：<code>http://服务器:端口/rest/ping?apiKey=秘钥&amp;v=1.16.1&amp;c=客户端&amp;f=json</code>。秘钥对应管理员用户。
+                                    </div>
+                                </div>
+
+                                <div class="settings-group user-settings" id="user-management-section" style="display: none;">
+                                    <div class="user-settings-header">
+                                        <div class="user-settings-icon">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                        </div>
+                                        <div class="user-settings-title">
+                                            <div class="user-settings-title-text">用户管理</div>
+                                            <div class="user-settings-title-desc">管理系统用户账户</div>
+                                        </div>
+                                    </div>
+                                    <div class="user-settings-content">
+                                        <div class="user-settings-actions">
+                                            <button class="user-btn user-btn-primary" onclick="showAddUserModal()">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                                添加用户
+                                            </button>
+                                        </div>
+                                        <div class="user-table-container">
+                                            <table class="user-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>用户名</th>
+                                                        <th>备注</th>
+                                                        <th>操作</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="user-table-body">
+                                                    <tr>
+                                                        <td>admin</td>
+                                                        <td>系统管理员</td>
+                                                        <td>
+                                                            <div class="user-table-actions">
+                                                                <button class="user-table-btn" onclick="showEditUserModal(1)" title="编辑">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                                                </button>
+                                                                <button class="user-table-btn user-table-btn-danger" onclick="deleteUser('admin')" title="删除" disabled>
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 下载订阅页面 -->
+
+                <!-- 内容区播放列表面板 -->
+                <div class="content-playlist-panel" id="content-playlist-panel">
+                    <div class="content-playlist-header">
+                        <div>
+                            <span class="content-playlist-title">播放列表</span>
+                            <span class="content-playlist-count" id="content-playlist-count">(0)</span>
+                        </div>
+                        <button class="content-playlist-close" onclick="PlayerDetail.clearPlaylist()" title="清空">清空</button>
+                    </div>
+                    <div class="content-playlist-body" id="content-playlist-body">
+                        <div style="padding: 40px 20px; text-align: center; color: var(--text-tertiary);">播放列表为空</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 播放器 - 封面+信息+内嵌进度条 -->
+            <div class="player-bar">
+                <!-- 进度条（使用播放详情页样式） -->
+                <div class="detail-progress-bar" id="player-progress-bar" onclick="seekMusic(event)">
+                    <div class="detail-progress-fill" id="progress-fill" style="width: 0%">
+                        <div class="detail-progress-thumb"></div>
+                    </div>
+                </div>
+                <!-- 内容区域 -->
+                <div class="player-content">
+                    <!-- 1. 歌曲信息区域 (25%) - 左对齐 -->
+                    <div class="player-info-section">
+                        <div class="player-cover-wrapper" onclick="openPlayerDetail(event)">
+                            <div class="player-cover" id="player-cover">
+                                <div style="font-size: 24px; color: var(--text-tertiary);">🎵</div>
+                            </div>
+                        </div>
+                        <div class="player-info-text">
+                            <div class="player-title" id="player-title">未在播放</div>
+                            <div class="player-meta">
+                                <span class="player-artist" id="player-artist">-</span>
+                                <span class="player-meta-separator">·</span>
+                                <span class="player-album" id="player-album"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 2. 来源缓存区域 (5%) - 居中，两行显示（第一行类型 / 第二行直接来源名） -->
+                    <div class="player-source-section pa3">
+                        <div class="player-source-row">
+                            <span class="player-local-tag" id="player-local-tag" style="display: none;">本地</span>
+                            <span class="player-source-stack">
+                                <span class="player-source-line" id="player-source-type"></span>
+                                <span class="player-source-line" id="player-source-name"></span>
+                            </span>
+                        </div>
+                    </div>
+                    <!-- 3. 播放控制区域 (40%) - 居中 -->
+                    <div class="player-control-section" id="player-controls-container">
+                        <div class="player-time-group pa5">
+                            <span class="player-time-text" id="time-current">00:00</span>
+                        </div>
+                        <button class="player-control-btn pa6" id="player-prev-btn" onclick="playPrev(); event.stopPropagation();" title="上一首">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="6" width="3" height="12" rx="1.5"/><path d="M9 12l8.5-6v12z"/></svg>
+                        </button>
+                        <button class="player-control-btn play" id="player-play-btn" onclick="togglePlay(); event.stopPropagation();" title="播放/暂停">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                        </button>
+                        <button class="player-control-btn pa6" id="player-stop-btn" onclick="stopAndCloseDetail(); event.stopPropagation();" title="停止">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="3"/></svg>
+                        </button>
+                        <button class="player-control-btn" id="player-next-btn" onclick="playNext(); event.stopPropagation();" title="下一首">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="17" y="6" width="3" height="12" rx="1.5" transform="rotate(180 18.5 12)"/><path d="M15 12l-8.5-6v12z"/></svg>
+                        </button>
+                        <div class="player-time-group pa5">
+                            <span class="player-time-text" id="time-total">00:00</span>
+                        </div>
+                    </div>
+                    <!-- 4. 功能按钮区域 (30%) - 右对齐 -->
+                    <div class="player-function-section">
+                        <!-- 功能区（手机端与电脑端同一套，宽度不足时按优先级自动隐藏） -->
+                        <div class="player-function-group player-desktop-functions">
+                            <!-- 音量控制按钮和进度条 -->
+                            <div class="player-volume-wrapper pa5">
+                                <button class="player-func-btn" id="player-volume-btn" onclick="togglePlayerMute(); event.stopPropagation();" title="音量">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" id="player-volume-icon">
+                                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                                    </svg>
+                                </button>
+                                <div class="player-volume-slider pa4" id="player-volume-slider">
+                                    <div class="player-volume-track">
+                                        <div class="player-volume-fill" id="player-volume-fill" style="width: 70%">
+                                            <div class="player-volume-thumb"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="player-func-btn pa3" id="player-shuffle-btn" onclick="toggleShuffleMode(); event.stopPropagation();" title="随机播放">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
+                            </button>
+                            <button class="player-func-btn pa3" id="player-repeat-btn" onclick="toggleRepeatMode(); event.stopPropagation();" title="循环播放">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+                            </button>
+                            <button class="player-func-btn pa4" id="player-like-btn" onclick="toggleLike(); event.stopPropagation();" title="收藏">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                            </button>
+                            <button class="player-func-btn download-btn pa2" id="player-download-btn-desktop" onclick="downloadCurrentMusic(); event.stopPropagation();" title="下载">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                            </button>
+                            <button class="player-func-btn player-quality-btn pa2" id="player-quality-btn" onclick="openQualityDropdown(this); event.stopPropagation();" title="音质">
+                                <span id="player-quality-text">标</span>
+                            </button>
+                            <button class="player-func-btn player-source-switch-btn pa1" id="player-source-switch-btn" onclick="openSourceSwitch(); event.stopPropagation();" title="切换音源">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4M7 4 3 8M7 4l4 4"/><path d="M17 8v12M17 20l4-4M17 20l-4-4"/></svg>
+                            </button>
+                            <button class="player-func-btn pa2" id="player-playlist-btn-desktop" onclick="toggleContentPlaylist(); event.stopPropagation();" title="播放列表">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <audio id="audio-player" preload="auto" ontimeupdate="updateProgress()" onended="handlePlaybackEnded()"></audio>
+            </div>
+            </div>
+        </main>
+    </div>
+    </div>
+
+    <!-- 从网络安装插件模态框 -->
+    <div class="modal-overlay" id="install-from-url-modal" style="display: none;">
+        <div class="modal" style="background: var(--bg-secondary); border: 1px solid var(--divider-color); border-radius: 12px; padding: 24px; min-width: 400px;">
+            <div class="modal-header" style="font-size: 18px; font-weight: 600; margin-bottom: 20px; color: var(--text-primary);">从网络安装插件</div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label" style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: 14px;">网络地址 <span style="color: #ef4444;">*</span></label>
+                    <input type="text" class="form-input" id="plugin-url-input" placeholder="输入插件URL (以 .js 结尾)" style="width: 100%; padding: 12px 16px; background: var(--bg-primary); border: 1px solid var(--divider-color); border-radius: 8px; color: var(--text-primary); font-size: 14px; outline: none; transition: border-color 0.2s;">
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label" style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: 14px;">音源别名 <span style="color: #ef4444;">*</span></label>
+                    <select class="form-select" id="plugin-name-input" style="width: 100%; padding: 12px 16px; background: var(--bg-primary); border: 1px solid var(--divider-color); border-radius: 8px; color: var(--text-primary); font-size: 14px; outline: none; transition: border-color 0.2s;" onchange="onAliasSelectChange(this, 'plugin-name-input-new')">
+                        <option value="">选择要归入的音源别名…</option>
+                    </select>
+                    <input type="text" class="form-input" id="plugin-name-input-new" placeholder="输入新音源别名，将作为新目录名" style="display: none; width: 100%; margin-top: 8px; padding: 12px 16px; background: var(--bg-primary); border: 1px solid var(--divider-color); border-radius: 8px; color: var(--text-primary); font-size: 14px; outline: none;">
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+                <button class="btn btn-secondary" onclick="closeModal()" style="padding: 10px 20px; background: transparent; border: 1px solid var(--divider-color); color: var(--text-primary); border-radius: 8px; cursor: pointer; font-size: 14px;">取消</button>
+                <button class="btn btn-primary" onclick="installPluginFromUrl()" style="padding: 10px 24px; background: var(--primary-color); border: none; color: white; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500;">安装</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast 容器 -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- 从本地文件安装插件模态框 -->
+    <div class="modal-overlay" id="install-from-file-modal" style="display: none;">
+        <div class="modal" style="background: var(--bg-secondary); border: 1px solid var(--divider-color); border-radius: 12px; padding: 24px; min-width: 400px;">
+            <div class="modal-header" style="font-size: 18px; font-weight: 600; margin-bottom: 20px; color: var(--text-primary);">从本地文件安装插件</div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label" style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: 14px;">音源别名 <span style="color: #ef4444;">*</span></label>
+                    <select class="form-select" id="plugin-file-alias-input" style="width: 100%; padding: 12px 16px; background: var(--bg-primary); border: 1px solid var(--divider-color); border-radius: 8px; color: var(--text-primary); font-size: 14px; outline: none; transition: border-color 0.2s;" onchange="onAliasSelectChange(this, 'plugin-file-alias-input-new')">
+                        <option value="">选择要归入的音源别名…</option>
+                    </select>
+                    <input type="text" class="form-input" id="plugin-file-alias-input-new" placeholder="输入新音源别名，将作为新目录名" style="display: none; width: 100%; margin-top: 8px; padding: 12px 16px; background: var(--bg-primary); border: 1px solid var(--divider-color); border-radius: 8px; color: var(--text-primary); font-size: 14px; outline: none;">
+                </div>
+                <input type="file" id="plugin-file-input-modal" accept=".js" style="display: none;" onchange="installPluginFromFile(event)">
+            </div>
+            <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+                <button class="btn btn-secondary" onclick="closeModal()" style="padding: 10px 20px; background: transparent; border: 1px solid var(--divider-color); color: var(--text-primary); border-radius: 8px; cursor: pointer; font-size: 14px;">取消</button>
+                <button class="btn btn-primary" onclick="pickPluginFileWithAlias()" style="padding: 10px 24px; background: var(--primary-color); border: none; color: white; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500;">选择文件并安装</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导入电台封面模态框（电台插件专属） -->
+    <div class="modal-overlay" id="radio-cover-modal" style="display: none;">
+        <div class="modal" style="background: var(--bg-secondary); border: 1px solid var(--divider-color); border-radius: 12px; padding: 24px; min-width: 400px;">
+            <div class="modal-header" style="font-size: 18px; font-weight: 600; margin-bottom: 20px; color: var(--text-primary);">导入电台封面</div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label" style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: 14px;">电台名称（需与电台列表中的名字完全一致，自动匹配显示）</label>
+                    <input type="text" class="form-input" id="radio-cover-name" placeholder="请输入电台名称" style="width: 100%; padding: 12px 16px; background: var(--bg-primary); border: 1px solid var(--divider-color); border-radius: 8px; color: var(--text-primary); font-size: 14px; outline: none; transition: border-color 0.2s;">
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label" style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: 14px;">选择本地封面图片</label>
+                    <input type="file" id="radio-cover-file" accept="image/*" style="display: none;" onchange="RadioModule.previewRadioCover(event)">
+                    <button class="btn btn-secondary" type="button" onclick="document.getElementById('radio-cover-file').click()" style="padding: 10px 20px; background: var(--bg-primary); border: 1px solid var(--divider-color); color: var(--text-primary); border-radius: 8px; cursor: pointer; font-size: 14px; display: inline-block;">选择图片</button>
+                </div>
+                <div style="text-align: center;">
+                    <img id="radio-cover-preview" alt="预览" style="display: none; max-width: 160px; max-height: 160px; border-radius: 8px; object-fit: cover;">
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+                <button class="btn btn-secondary" type="button" onclick="RadioModule.closeRadioCoverModal()" style="padding: 10px 20px; background: transparent; border: 1px solid var(--divider-color); color: var(--text-primary); border-radius: 8px; cursor: pointer; font-size: 14px;">取消</button>
+                <button class="btn btn-primary" type="button" onclick="RadioModule.submitRadioCover()" style="padding: 10px 24px; background: var(--primary-color); border: none; color: white; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500;">导入</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加用户弹窗 -->
+    <div class="modal-overlay" id="add-user-modal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">添加用户</div>
+            <form autocomplete="on">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">用户名</label>
+                        <input type="text" class="form-input" id="new-username" placeholder="请输入用户名" autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">密码</label>
+                        <input type="password" class="form-input" id="new-password" placeholder="请输入密码" autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">备注</label>
+                        <input type="text" class="form-input" id="new-user-remark" placeholder="可选：输入用户备注">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddUserModal()">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="addUser()">添加</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 编辑用户弹窗 -->
+    <div class="modal-overlay" id="edit-user-modal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">编辑用户</div>
+            <form autocomplete="on">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">用户名</label>
+                        <input type="text" class="form-input" id="edit-user-username" autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">新密码（留空表示不修改）</label>
+                        <input type="password" class="form-input" id="edit-user-new" placeholder="请输入新密码" autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">确认密码</label>
+                        <input type="password" class="form-input" id="edit-user-confirm" placeholder="请再次输入新密码" autocomplete="new-password">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditUserModal()">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveEditUser()">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 通用输入弹窗 -->
+    <div class="modal-overlay" id="input-modal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header" id="input-modal-title">输入</div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <input type="text" class="form-input" id="input-modal-field" placeholder="">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeInputModal()">取消</button>
+                <button type="button" class="btn btn-primary" onclick="confirmInputModal()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 插件用户变量弹窗 -->
+    <div class="modal-overlay" id="plugin-user-vars-modal" style="display: none;">
+        <div class="modal" style="max-width: 520px; width: 90vw;">
+            <div class="modal-header" id="plugin-user-vars-title">用户变量</div>
+            <div class="modal-body" id="plugin-user-vars-body" style="max-height: 70vh; overflow-y: auto;">
+                <!-- 动态渲染变量表单 -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeUserVarsModal()">取消</button>
+                <button type="button" class="btn btn-primary" onclick="saveUserVars()">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LX 音源：粘贴脚本导入弹窗 -->
+    <div class="modal-overlay" id="lx-source-import-modal" style="display: none;">
+        <div class="modal" style="max-width: 720px; width: 92vw;">
+            <div class="modal-header" id="lx-source-import-title">粘贴 LX 音源脚本</div>
+            <div class="modal-body">
+                <textarea id="lx-source-import-field" class="form-input"
+                    style="width: 100%; min-height: 300px; font-family: monospace; font-size: 12px; line-height: 1.5; resize: vertical;"
+                    placeholder="把落雪音乐的「自定义音源」脚本内容粘贴到这里…"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeLxSourceImportModal()">取消</button>
+                <button type="button" class="btn btn-primary" onclick="submitLxSourcePaste()">导入</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LX 音源：本地文件选择（隐藏） -->
+    <input type="file" id="lx-source-file-input" accept=".js,application/javascript,text/javascript"
+        style="display: none;" onchange="onLxSourceFilePicked(this)">
+
+    <!-- 音质选择下拉菜单 -->
+    <div id="quality-dropdown" class="quality-dropdown" style="display: none;">
+        <div class="quality-item" data-quality="low">
+            <span class="quality-name">低音质</span>
+            <span class="quality-check">✓</span>
+        </div>
+        <div class="quality-item" data-quality="standard">
+            <span class="quality-name">标准音质</span>
+            <span class="quality-check">✓</span>
+        </div>
+        <div class="quality-item" data-quality="high">
+            <span class="quality-name">高音质</span>
+            <span class="quality-check">✓</span>
+        </div>
+        <div class="quality-item" data-quality="super">
+            <span class="quality-name">超高音质</span>
+            <span class="quality-check">✓</span>
+        </div>
+    </div>
+
+    <!-- 播放器更多菜单 -->
+    <div class="player-more-menu" id="player-more-menu" style="display: none; position: fixed; bottom: calc(var(--music-bar-height) + 8px); right: 12px; background: var(--bg-secondary); border: 1px solid var(--divider-color); border-radius: 8px; padding: 8px; z-index: 101; box-shadow: 0 4px 20px rgba(0,0,0,0.5); min-width: 160px;">
+        <div class="player-more-menu-item" id="more-btn-shuffle" onclick="toggleShuffleMode(); closePlayerMoreMenu();" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; cursor: pointer; border-radius: 6px; color: var(--text-color); font-size: 14px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
+            <span>随机播放</span>
+        </div>
+        <div class="player-more-menu-item" id="more-btn-repeat" onclick="toggleRepeatMode(); closePlayerMoreMenu();" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; cursor: pointer; border-radius: 6px; color: var(--text-color); font-size: 14px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+            <span>循环播放</span>
+        </div>
+        <div class="player-more-menu-item" id="more-btn-like" onclick="toggleLike(); closePlayerMoreMenu();" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; cursor: pointer; border-radius: 6px; color: var(--text-color); font-size: 14px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <span>收藏</span>
+        </div>
+        <div class="player-more-menu-item" onclick="openQualityDropdown(document.getElementById('player-quality-btn')); closePlayerMoreMenu();" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; cursor: pointer; border-radius: 6px; color: var(--text-color); font-size: 14px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10z"/></svg>
+            <span>音质选择</span>
+        </div>
+        <div class="player-more-menu-item" onclick="togglePlayerMute(); closePlayerMoreMenu();" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; cursor: pointer; border-radius: 6px; color: var(--text-color); font-size: 14px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+            <span>静音</span>
+        </div>
+    </div>
+
+    <!-- 播放详情页面（全屏弹窗） -->
+    <div class="player-detail-overlay" id="player-detail-overlay" onclick="closePlayerDetail()">
+        <div class="player-detail-page" id="player-detail-page" onclick="event.stopPropagation()">
+            <div class="player-detail-background" id="detail-background"></div>
+            <div class="player-detail-header">
+                <button class="detail-back-btn" onclick="closePlayerDetail()" title="收起">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;">
+                        <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                    </svg>
+                    <span style="font-size: 20px;">收起</span>
+                </button>
+            </div>
+            <div class="player-detail-content">
+                <div class="detail-left">
+                    <div class="detail-cover" id="detail-cover">
+                        <div style="font-size: 80px; color: rgba(255,255,255,0.3);">🎵</div>
+                    </div>
+                    <div class="detail-info-section">
+                        <div class="detail-title-row">
+                            <span class="detail-title" id="detail-title">未在播放</span>
+                        </div>
+                        <div class="detail-meta-row">
+                            <span class="detail-artist" id="detail-artist">-</span>
+                            <span class="detail-meta-separator">·</span>
+                            <span class="detail-album" id="detail-album"></span>
+                        </div>
+                        <div class="detail-progress-section">
+                            <div class="detail-progress-bar" id="detail-progress-bar">
+                                <div class="detail-progress-fill" id="detail-progress-fill" style="width: 0%">
+                                    <div class="detail-progress-thumb"></div>
+                                </div>
+                            </div>
+                            <div class="detail-time">
+                                <span id="detail-current-time">0:00</span>
+                                <span class="detail-source-wrapper">
+                                    <span class="detail-source-line" id="detail-source-type">-</span>
+                                    <span class="detail-source-line" id="detail-source-name"></span>
+                                </span>
+                                <span id="detail-duration">0:00</span>
+                            </div>
+                        </div>
+                        <!-- 控制按钮区域 - 由 JS 动态生成 -->
+                        <div id="detail-controls-container"></div>
+                    </div>
+                </div>
+                <!-- 右侧区域 - 歌词/播放列表（在右侧或下方显示） -->
+                <div class="detail-right" id="detail-right" style="display: none;">
+                    <div class="detail-lyrics" id="detail-lyrics">
+                        <div class="lyrics-placeholder">暂无歌词</div>
+                    </div>
+                    <div class="detail-playlist" id="detail-playlist" style="display: none;">
+                        <div class="playlist-header">
+                            <div class="playlist-header-left">
+                                <span class="playlist-title">播放列表</span>
+                                <span class="playlist-count" id="detail-playlist-count">(0)</span>
+                            </div>
+                            <button class="playlist-clear-btn" onclick="PlayerDetail.clearPlaylist()" title="清空">清空</button>
+                        </div>
+                        <div class="playlist-content" id="playlist-content">
+                            <div class="playlist-empty">播放列表为空</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 核心模块 -->
+    <script src="js/core/config.js?v=3"></script>
+    <script src="js/core/logger-filter.js"></script>
+    <script src="js/core/state.js?v=2"></script>
+    <script src="js/core/state-manager.js?v=8"></script>
+<script src="js/core/button-manager.js?v=7"></script>
+    <script src="js/core/button-actions.js?v=3"></script>
+    <script src="js/core/favorite-manager.js?v=2"></script>
+    <script src="js/core/utils.js?v=4"></script>
+    <script src="js/core/auth.js?v=3"></script>
+    <script src="js/core/api.js?v=11"></script>
+    <script src="js/core/cache-manager.js?v=4"></script>
+    <script src="js/core/resolver.js?v=4"></script>
+    <script src="js/core/event-bus.js"></script>
+    <script src="js/core/notification.js"></script>
+    <script src="js/core/template-loader.js"></script>
+    <script src="js/core/download.js"></script>
+
+    <!-- 下载模块（需要先加载，供其他模块使用） -->
+
+
+
+    <!-- 通用组件 -->
+    <script src="js/components/music-table.js?v=4"></script>
+    <script src="js/components/music-list.js?v=7"></script>
+    <script src="js/core/cover-lazy.js?v=5"></script>
+    <script src="js/components/song-table.js?v=105"></script>
+    <script src="js/core/lazy-render.js?v=4"></script>
+    <script src="js/modules/download/index.js?v=21"></script>
+    <script src="js/components/plugin-tabs.js?v=5"></script>
+
+    <!-- 播放器模块 -->
+    <script src="js/modules/player/index.js?v=28"></script>
+      <script src="js/modules/player/detail.js?v=34"></script>
+
+    <!-- 搜索模块 -->
+    <script src="js/modules/search/index.js?v=3"></script>
+
+    <!-- 功能模块 -->
+    <script src="js/modules/my-playlists/index.js?v=84"></script>
+    <script src="js/modules/toplist/index.js?v=28"></script>
+    <script src="js/vendor/hls.min.js"></script>
+    <script src="js/modules/recommend/index.js?v=25"></script>
+    <script src="js/modules/lx/index.js?v=12"></script>
+    <script src="js/modules/lx/sources-ui.js?v=7"></script>
+    <script src="js/modules/radio/index.js?v=23"></script>
+    <script src="js/modules/recent/index.js?v=21"></script>
+    <script src="js/modules/subscribe/download.js?v=1"></script>
+    <script src="js/modules/subscribe/sync.js?v=1"></script>
+    <script src="js/modules/subscribe/index.js?v=3"></script>
+    <script src="js/modules/favorites/index.js?v=22"></script>
+    <script src="js/modules/plugins/index.js?v=5"></script>
+    <script src="js/modules/settings/index.js?v=15"></script>
+    <script src="js/modules/notification-settings/index.js"></script>
+    <script src="js/modules/local/index.js?v=47"></script>
+
+    <!-- API 模块 -->
+    <script src="js/api/play-queue.js"></script>
+    <script src="js/api/player-state.js"></script>
+
+    <!-- 登录处理逻辑 -->
+    <script>
+        /**
+         * 处理登录表单提交
+         */
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('login-btn');
+            const errorDiv = document.getElementById('login-error');
+
+            // 禁用按钮
+            loginBtn.disabled = true;
+            loginBtn.textContent = '登录中...';
+            errorDiv.classList.remove('show');
+
+            // 调用登录 API
+            const result = await Auth.login(username, password);
+
+            if (result.success) {
+                // 登录成功，显示主应用
+                showMainApp();
+            } else {
+                // 登录失败，显示错误
+                errorDiv.textContent = result.error || '登录失败';
+                errorDiv.classList.add('show');
+                loginBtn.disabled = false;
+                loginBtn.textContent = '登录';
+            }
+        }
+
+        /**
+         * 显示主应用
+         */
+        function showMainApp() {
+            const loginPage = document.getElementById('login-page');
+            const appWrapper = document.getElementById('app-wrapper');
+            
+            // 使用 class 和 style 双重确保登录页面隐藏
+            loginPage.classList.add('hidden');
+            loginPage.style.display = 'none';
+            
+            appWrapper.classList.add('logged-in');
+            appWrapper.style.display = 'block';
+
+            // 更新用户信息显示
+            updateUserInfoDisplay();
+
+            // 更新管理员菜单可见性
+            if (typeof updateAdminMenuVisibility === 'function') {
+                updateAdminMenuVisibility();
+            }
+
+            // 触发登录成功事件
+            window.dispatchEvent(new CustomEvent('app:ready'));
+        }
+
+        /**
+         * 显示登录页面
+         */
+        function showLoginPage() {
+            const loginPage = document.getElementById('login-page');
+            const appWrapper = document.getElementById('app-wrapper');
+            
+            loginPage.classList.remove('hidden');
+            loginPage.style.display = 'flex';
+            
+            appWrapper.classList.remove('logged-in');
+            appWrapper.style.display = 'none';
+            
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('login-error').classList.remove('show');
+            document.getElementById('login-btn').disabled = false;
+            document.getElementById('login-btn').textContent = '登录';
+        }
+
+        /**
+         * 更新用户信息显示
+         */
+        function updateUserInfoDisplay() {
+            const user = Auth.getUser();
+            if (!user) return;
+
+            // 在侧边栏底部添加用户信息（如果不存在）
+            const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            let userInfo = document.getElementById('header-user-info');
+            if (!userInfo) {
+                const headerActions = document.getElementById('sidebar-footer');
+                userInfo = document.createElement('div');
+                userInfo.id = 'header-user-info';
+                userInfo.className = 'user-info';
+                userInfo.innerHTML = `
+                    <div class="user-menu-icon user-avatar" title="${esc(user.username)}">${esc((user.username || ' ').trim().charAt(0).toUpperCase())}</div>
+                    <div class="user-dropdown" id="user-dropdown">
+                        <button class="user-dropdown-item admin-only-menu-item" id="user-menu-logs" type="button" onclick="event.stopPropagation(); window.handleLogsClick && window.handleLogsClick();" style="width: 100%; border: none; background: transparent; text-align: left; font-family: inherit; display: none;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; pointer-events: none;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                            系统日志
+                        </button>
+                        <button class="user-dropdown-item admin-only-menu-item" id="user-menu-settings" type="button" onclick="event.stopPropagation(); window.handleSettingsClick && window.handleSettingsClick();" style="width: 100%; border: none; background: transparent; text-align: left; font-family: inherit; display: none;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; pointer-events: none;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l-.15-.09a2 2 0 0 0-.73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            系统设置
+                        </button>
+                        <button class="user-dropdown-item" id="user-menu-local-rescan" type="button" onclick="event.stopPropagation(); window.handleLocalRescanClick && window.handleLocalRescanClick();" style="width: 100%; border: none; background: transparent; text-align: left; font-family: inherit;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; pointer-events: none;"><path d="M20 11a8.1 8.1 0 0 0-15.5-2m-.5-4v4h4"></path><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path></svg>
+                            扫描音乐
+                        </button>
+                        <div class="user-dropdown-divider admin-only-menu-divider" style="display: none;"></div>
+                        <button class="user-dropdown-item" id="user-menu-logout" type="button" onclick="event.stopPropagation(); window.handleLogout && window.handleLogout();" style="width: 100%; border: none; background: transparent; text-align: left; font-family: inherit;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; pointer-events: none;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                            退出登录
+                        </button>
+                    </div>
+                `;
+
+                // 点击显示/隐藏下拉菜单
+                userInfo.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const dropdown = document.getElementById('user-dropdown');
+                    // 根据管理员权限显示/隐藏系统设置菜单
+                    const isAdmin = window.Auth && window.Auth.isAdmin && window.Auth.isAdmin();
+                    document.querySelectorAll('.admin-only-menu-item, .admin-only-menu-divider').forEach(el => {
+                        el.style.display = isAdmin ? '' : 'none';
+                    });
+                    dropdown.classList.toggle('show');
+                });
+
+                // 点击其他地方隐藏下拉菜单
+                document.addEventListener('click', (e) => {
+                    const dropdown = document.getElementById('user-dropdown');
+                    // 点击其他地方关闭下拉菜单
+                    if (dropdown && !e.target.closest('.user-dropdown') && !e.target.closest('.user-info')) {
+                        dropdown.classList.remove('show');
+                    }
+                });
+
+                headerActions.appendChild(userInfo);
+            } else {
+                // 更新现有用户信息（头像内显示用户名首字符）
+                const icon = userInfo.querySelector('.user-menu-icon');
+                if (icon) {
+                    icon.title = user.username;
+                    icon.textContent = (user.username || '').trim().charAt(0).toUpperCase() || '?';
+                }
+            }
+        }
+
+        /**
+         * 处理退出登录
+         */
+        function handleLogout() {
+            Auth.logout();
+            showLoginPage();
+
+            // 清理用户信息显示
+            const userInfo = document.getElementById('header-user-info');
+            if (userInfo) {
+                userInfo.remove();
+            }
+        }
+
+        /**
+         * 处理系统设置点击
+         */
+        function handleSettingsClick() {
+            // 关闭下拉菜单
+            const dropdown = document.getElementById('user-dropdown');
+            if (dropdown) dropdown.classList.remove('show');
+
+            // 切换到设置页面
+            switchPage('settings');
+        }
+
+        /**
+         * 处理重新扫描本地音乐点击
+         */
+        function handleLocalRescanClick() {
+            // 关闭下拉菜单
+            const dropdown = document.getElementById('user-dropdown');
+            if (dropdown) dropdown.classList.remove('show');
+
+            if (typeof window.startLocalRescan === 'function') {
+                window.startLocalRescan();
+            } else {
+                showToast('本地音乐模块未加载', 'warning');
+            }
+        }
+
+        /**
+         * 处理系统日志点击
+         */
+        async function handleLogsClick() {
+            // 关闭下拉菜单
+            const dropdown = document.getElementById('user-dropdown');
+            if (dropdown) dropdown.classList.remove('show');
+
+            // 显示日志弹窗
+            showLogsModal();
+        }
+
+        /**
+         * 显示日志弹窗
+         */
+        async function showLogsModal() {
+            // 创建弹窗
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.id = 'logs-modal';
+            modal.innerHTML = `
+                <div class="modal logs-modal">
+                    <div class="modal-header">
+                        <div class="modal-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                            系统日志
+                        </div>
+                        <button class="modal-close" onclick="closeLogsModal()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                    </div>
+                    <div class="logs-toolbar">
+                        <div class="logs-filter">
+                            <button class="logs-filter-btn active" data-level="all" onclick="filterLogs('all')">全部</button>
+                            <button class="logs-filter-btn" data-level="error" onclick="filterLogs('error')">错误</button>
+                            <button class="logs-filter-btn" data-level="warn" onclick="filterLogs('warn')">警告</button>
+                            <button class="logs-filter-btn" data-level="info" onclick="filterLogs('info')">信息</button>
+                        </div>
+                        <div class="logs-actions">
+                            <button class="logs-clear-btn" onclick="clearLogs()" title="清除日志">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                清除
+                            </button>
+                            <button class="logs-refresh-btn" onclick="refreshLogs()" title="刷新">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                                刷新
+                            </button>
+                            <button class="logs-refresh-btn" id="logs-autorefresh-btn" onclick="toggleLogsAutoRefresh()" title="自动刷新（每3秒）">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.8 1 6.4 2.6"></path><polyline points="21 3 21 9 15 9"></polyline></svg>
+                                自动刷新
+                            </button>
+                        </div>
+                    </div>
+                    <div class="logs-content" id="logs-content">
+                        <div class="logs-loading">正在加载日志...</div>
+                    </div>
+                    <div class="logs-footer">
+                        <span id="logs-count">共 0 条日志</span>
+                        <div class="logs-pagination" id="logs-pagination">
+                            <button class="logs-page-btn" onclick="changePage(1)" title="首页">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><polyline points="11 17 6 12 11 7"></polyline><polyline points="18 17 13 12 18 7"></polyline></svg>
+                            </button>
+                            <button class="logs-page-btn" onclick="changePage(currentPage - 1)" title="上一页">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                            </button>
+                            <span class="logs-page-info" id="logs-page-info">1 / 1</span>
+                            <button class="logs-page-btn" onclick="changePage(currentPage + 1)" title="下一页">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </button>
+                            <button class="logs-page-btn" onclick="changePage(totalPages)" title="末页">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><polyline points="13 17 18 12 13 7"></polyline><polyline points="6 17 11 12 6 7"></polyline></svg>
+                            </button>
+                            <select class="logs-page-size" id="logs-page-size" onchange="changePageSize(this.value)">
+                                <option value="20">20条/页</option>
+                                <option value="50" selected>50条/页</option>
+                                <option value="100">100条/页</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.style.display = 'flex';
+
+            // 点击遮罩层关闭弹窗
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeLogsModal();
+                }
+            });
+
+            // ESC键关闭弹窗
+            const handleEsc = (e) => {
+                if (e.key === 'Escape') {
+                    closeLogsModal();
+                    document.removeEventListener('keydown', handleEsc);
+                }
+            };
+            document.addEventListener('keydown', handleEsc);
+
+            // 初始化分页变量
+            window.currentPage = 1;
+            window.totalPages = 1;
+            window.pageSize = 50;
+            window.currentFilterLevel = 'all';
+
+            // 加载日志数据
+            await loadLogsData();
+
+            // 打开日志弹窗默认开启每 3 秒自动刷新，避免「播放歌曲名等日志不及时出现」
+            if (!window.logsAutoRefresh) toggleLogsAutoRefresh();
+        }
+
+        /**
+         * 加载日志数据
+         */
+        async function loadLogsData(filterLevel = null, page = null) {
+            const contentEl = document.getElementById('logs-content');
+            if (!contentEl) return;
+
+            // 使用当前状态
+            const level = filterLevel || window.currentFilterLevel || 'all';
+            const currentPage = page || window.currentPage || 1;
+            const size = window.pageSize || 50;
+
+            try {
+                const response = await Auth.authenticatedFetch(`/api/logs?page=${currentPage}&pageSize=${size}&level=${level}`);
+                const result = await response.json();
+
+                if (!result.success) {
+                    contentEl.innerHTML = `<div class="logs-error">加载失败: ${result.error || '未知错误'}</div>`;
+                    return;
+                }
+
+                const logs = result.data.logs || [];
+                window.totalPages = result.data.totalPages || 1;
+                window.currentPage = result.data.page || 1;
+
+                renderLogs(logs, level);
+                updatePagination(result.data);
+            } catch (err) {
+                contentEl.innerHTML = `<div class="logs-error">加载失败: ${err.message}</div>`;
+            }
+        }
+
+        /**
+         * 更新分页控件
+         */
+        function updatePagination(data) {
+            const pageInfoEl = document.getElementById('logs-page-info');
+            const countEl = document.getElementById('logs-count');
+
+            if (pageInfoEl) {
+                pageInfoEl.textContent = `${data.page} / ${data.totalPages}`;
+            }
+
+            if (countEl) {
+                countEl.textContent = `共 ${data.total} 条日志，每页 ${data.pageSize} 条`;
+            }
+
+            // 更新按钮状态
+            const paginationEl = document.getElementById('logs-pagination');
+            if (paginationEl) {
+                const buttons = paginationEl.querySelectorAll('.logs-page-btn');
+                buttons.forEach((btn, index) => {
+                    // 首页和上一页
+                    if (index <= 1) {
+                        btn.disabled = data.page <= 1;
+                        btn.style.opacity = data.page <= 1 ? '0.5' : '1';
+                    }
+                    // 下一页和末页
+                    if (index >= 2) {
+                        btn.disabled = data.page >= data.totalPages;
+                        btn.style.opacity = data.page >= data.totalPages ? '0.5' : '1';
+                    }
+                });
+            }
+        }
+
+        /**
+         * 切换页码
+         */
+        function changePage(page) {
+            if (page < 1 || page > window.totalPages || page === window.currentPage) {
+                return;
+            }
+            window.currentPage = page;
+            loadLogsData();
+        }
+
+        /**
+         * 切换每页条数
+         */
+        function changePageSize(size) {
+            window.pageSize = parseInt(size);
+            window.currentPage = 1; // 重置到第一页
+            loadLogsData();
+        }
+
+        /**
+         * 渲染日志列表
+         * 前台日志已包含中文内容，直接使用后端返回的数据
+         */
+        function renderLogs(logs) {
+            const contentEl = document.getElementById('logs-content');
+            if (!contentEl) return;
+
+            if (logs.length === 0) {
+                contentEl.innerHTML = '<div class="logs-empty">暂无日志</div>';
+                return;
+            }
+
+            // 日志级别样式映射（后端已返回中文模块名和消息）
+            const levelStyles = {
+                'error': { label: '错误', class: 'log-level-error' },
+                'warn': { label: '警告', class: 'log-level-warn' },
+                'info': { label: '信息', class: 'log-level-info' }
+            };
+
+            const html = logs.map(log => {
+                const levelStyle = levelStyles[log.level] || levelStyles.info;
+                const isImportant = log.level === 'error' || log.level === 'warn';
+                // 直接使用后端返回的中文模块名和消息；CLIENT 模块标注为中文
+                let moduleName = log.module || '未知模块';
+                if (moduleName === 'CLIENT') moduleName = '客户端请求';
+                const message = log.message || '';
+
+                // 构建详细信息（从meta中提取歌曲信息/请求信息等）
+                let detailsText = '';
+                if (log.meta && typeof log.meta === 'object') {
+                    const details = [];
+                    // 优先显示歌曲信息
+                    if (log.meta.title) details.push(`《${log.meta.title}》`);
+                    if (log.meta.artist) details.push(log.meta.artist);
+                    if (log.meta.plugin) details.push(`[${log.meta.plugin}]`);
+                    if (log.meta.album && !log.meta.title) details.push(log.meta.album);
+                    if (log.meta.quality) details.push(`音质:${log.meta.quality}`);
+                    // 客户端请求：展示 方法 + 接口路径 + 耗时 + 失败原因
+                    if (log.meta.endpoint) details.push(`${log.meta.method || 'GET'} ${log.meta.endpoint}`);
+                    if (typeof log.meta.ms === 'number') details.push(`耗时:${log.meta.ms}ms`);
+                    if (log.meta.error) details.push(`错误:${log.meta.error}`);
+
+                    if (details.length > 0) {
+                        detailsText = ' - ' + details.join(' ');
+                    }
+                }
+
+                return `
+                    <div class="log-item ${isImportant ? 'log-item-important' : ''} ${log.level}">
+                        <div class="log-header">
+                            <span class="log-time">${log.time}</span>
+                            <span class="log-level ${levelStyle.class}">${levelStyle.label}</span>
+                            <span class="log-module">${escapeHtml(moduleName)}</span>
+                        </div>
+                        <div class="log-message">${escapeHtml(message)}<span class="log-details-inline">${escapeHtml(detailsText)}</span></div>
+                    </div>
+                `;
+            }).join('');
+
+            contentEl.innerHTML = html;
+
+            // 滚动到顶部（最新的日志在上面）
+            contentEl.scrollTop = 0;
+        }
+
+        /**
+         * 筛选日志
+         */
+        function filterLogs(level) {
+            // 更新按钮状态
+            document.querySelectorAll('.logs-filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.level === level);
+            });
+
+            // 保存筛选级别并重新加载
+            window.currentFilterLevel = level;
+            window.currentPage = 1; // 重置到第一页
+            loadLogsData();
+        }
+
+        /**
+         * 刷新日志
+         */
+        async function refreshLogs() {
+            await loadLogsData();
+        }
+
+        /**
+         * 切换自动刷新（每 3 秒拉取最新日志，实时显示重要节点）
+         */
+        let logsAutoRefreshTimer = null;
+        function toggleLogsAutoRefresh() {
+            const btn = document.getElementById('logs-autorefresh-btn');
+            window.logsAutoRefresh = !window.logsAutoRefresh;
+            if (btn) btn.classList.toggle('active', !!window.logsAutoRefresh);
+            if (window.logsAutoRefresh) {
+                if (!logsAutoRefreshTimer) {
+                    logsAutoRefreshTimer = setInterval(() => {
+                        if (document.hidden) return; // 页面在后台时暂停拉取
+                        if (document.getElementById('logs-modal')) refreshLogs();
+                    }, 3000);
+                }
+            } else if (logsAutoRefreshTimer) {
+                clearInterval(logsAutoRefreshTimer);
+                logsAutoRefreshTimer = null;
+            }
+        }
+
+        /**
+         * 清除日志
+         */
+        async function clearLogs() {
+            try {
+                const response = await Auth.authenticatedFetch('/api/logs', {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    renderLogs([]);
+                    // 重置分页状态
+                    window.currentPage = 1;
+                    window.totalPages = 1;
+                    updatePagination({ page: 1, totalPages: 1, total: 0, pageSize: window.pageSize || 50 });
+                    showToast('日志已清除', 'success');
+                } else {
+                    showToast(`清除失败: ${result.error || '未知错误'}`, 'error');
+                }
+            } catch (err) {
+                showToast(`清除失败: ${err.message}`, 'error');
+            }
+        }
+
+        /**
+         * 关闭日志弹窗
+         */
+        function closeLogsModal() {
+            // 关闭时停止自动刷新，避免内存泄漏
+            if (logsAutoRefreshTimer) {
+                clearInterval(logsAutoRefreshTimer);
+                logsAutoRefreshTimer = null;
+            }
+            window.logsAutoRefresh = false;
+            const autoBtn = document.getElementById('logs-autorefresh-btn');
+            if (autoBtn) autoBtn.classList.remove('active');
+
+            const modal = document.getElementById('logs-modal');
+            if (modal) {
+                modal.remove();
+            }
+            window.allLogs = null;
+        }
+
+        /**
+         * HTML转义
+         */
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 导出到全局作用域
+        window.handleSettingsClick = handleSettingsClick;
+        window.handleLogsClick = handleLogsClick;
+        window.handleSwitchUser = handleSwitchUser;
+        window.handleLogout = handleLogout;
+
+        /**
+         * 处理切换用户
+         */
+        function handleSwitchUser() {
+            Auth.logout();
+            showLoginPage();
+
+            // 清理用户信息显示
+            const userInfo = document.getElementById('header-user-info');
+            if (userInfo) {
+                userInfo.remove();
+            }
+
+            // 自动聚焦到用户名输入框
+            setTimeout(() => {
+                const usernameInput = document.getElementById('login-username');
+                if (usernameInput) {
+                    usernameInput.focus();
+                }
+            }, 100);
+        }
+
+        /**
+         * 显示修改密码弹窗
+         */
+        function showChangePasswordModal() {
+            // 创建弹窗
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.id = 'change-password-modal';
+            modal.innerHTML = `
+                <div class="modal" style="background: var(--surface-color); border-radius: 16px; padding: 24px; min-width: 360px; max-width: 90vw;">
+                    <div class="modal-header" style="font-size: 18px; font-weight: 600; margin-bottom: 20px; color: var(--text-color);">修改密码</div>
+                    <div class="modal-body" style="display: flex; flex-direction: column; gap: 16px;">
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-size: 14px; color: var(--text-secondary);">新密码</label>
+                            <input type="password" id="change-new-password" style="padding: 10px 14px; background: var(--bg-secondary); border: 1px solid var(--divider-color); border-radius: 8px; color: var(--text-color); font-size: 14px; outline: none;">
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-size: 14px; color: var(--text-secondary);">确认新密码</label>
+                            <input type="password" id="change-confirm-password" style="padding: 10px 14px; background: var(--bg-secondary); border: 1px solid var(--divider-color); border-radius: 8px; color: var(--text-color); font-size: 14px; outline: none;">
+                        </div>
+                        <div id="change-password-error" style="color: #ef4444; font-size: 13px; display: none;"></div>
+                    </div>
+                    <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+                        <button class="btn btn-secondary" onclick="closeChangePasswordModal()" style="padding: 10px 20px; border-radius: 8px; border: 1px solid var(--divider-color); background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 14px;">取消</button>
+                        <button class="btn btn-primary" onclick="submitChangePassword()" style="padding: 10px 20px; border-radius: 8px; border: none; background: var(--primary-color); color: white; cursor: pointer; font-size: 14px; font-weight: 500;">确认</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.style.display = 'flex';
+
+            // 聚焦输入框
+            setTimeout(() => document.getElementById('change-new-password').focus(), 100);
+        }
+
+        /**
+         * 关闭修改密码弹窗
+         */
+        function closeChangePasswordModal() {
+            const modal = document.getElementById('change-password-modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        /**
+         * 提交修改密码
+         */
+        async function submitChangePassword() {
+            const newPassword = document.getElementById('change-new-password').value;
+            const confirmPassword = document.getElementById('change-confirm-password').value;
+            const errorDiv = document.getElementById('change-password-error');
+
+            if (!newPassword) {
+                errorDiv.textContent = '请输入新密码';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                errorDiv.textContent = '两次输入的新密码不一致';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            if (newPassword.length < 4) {
+                errorDiv.textContent = '新密码长度至少4位';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            const result = await Auth.changePassword(newPassword);
+
+            if (result.success) {
+                closeChangePasswordModal();
+                showNotification('密码修改成功', 'success');
+            } else {
+                errorDiv.textContent = result.error || '修改失败';
+                errorDiv.style.display = 'block';
+            }
+        }
+
+        /**
+         * 页面加载时检查登录状态
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            if (Auth && Auth.isLoggedIn()) {
+                // 已登录，显示主应用
+                showMainApp();
+
+                // 刷新用户信息
+                Auth.refreshUserInfo();
+            } else {
+                // 未登录，显示登录页面
+                showLoginPage();
+            }
+            
+            // 添加 auth-ready 类，启用 CSS 控制显示
+            document.body.classList.add('auth-ready');
+        });
+
+        // 监听登录过期事件
+        window.addEventListener('auth:logout', () => {
+            showLoginPage();
+        });
+    </script>
+
+    <!-- 应用入口 -->
+    <script src="js/app.js?v=30"></script>
+
+    <!-- PWA Service Worker 注册（开发模式禁用） -->
+    <script>
+        // 全环境注册 Service Worker（含 localhost / 127.0.0.1 本地调试）
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js');
+            });
+        }
+    </script>
+</body>
+</html>
+

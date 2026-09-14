@@ -1,0 +1,850 @@
+/* ============================================
+   MusicHub 播放详情页竖屏专用样式
+   Player Detail - Portrait Mode Only
+   
+   注意：此文件只包含竖屏(orientation: portrait)样式
+   与横屏样式完全独立，互不影响
+   ============================================ */
+
+/* ============================================
+   竖屏基础布局
+   ============================================ */
+@media screen and (max-width: 1400px) and (orientation: portrait) {
+    /* 播放详情页头部 - 固定高度60px */
+    .player-detail-header {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: 60px !important;
+        padding: 8px 16px !important;
+        flex-shrink: 0 !important;
+        z-index: 10 !important;
+    }
+
+    .detail-back-btn {
+        font-size: 16px !important;
+    }
+
+    .detail-back-btn svg {
+        width: 36px !important;
+        height: 36px !important;
+    }
+
+    /* 播放详情页布局调整 - 三区域结构 */
+    .player-detail-content {
+        flex-direction: column !important;
+        padding: 60px 0 0 0 !important;
+        gap: 0 !important;
+        height: 100dvh !important;
+        min-height: 0 !important;
+        position: relative !important;
+        display: flex !important;
+    }
+
+    /* 左侧区域 - 占满剩余空间，内部分配 55:45 */
+    .detail-left {
+        width: 100% !important;
+        padding: 0 !important;
+        position: static !important;
+        display: flex !important;
+        flex-direction: column !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+        margin: 0 !important;
+        flex: 1 !important;
+    }
+
+    /* 封面 - 占 55% */
+    .detail-cover {
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
+        max-height: none !important;
+        min-width: auto !important;
+        min-height: 0 !important;
+        flex: 55 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        overflow: hidden !important;
+        display: flex !important;
+        position: relative !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 10px 20px !important;
+    }
+
+    .detail-cover img {
+        max-width: 100% !important;
+        max-height: 100% !important;
+        width: auto !important;
+        height: 100% !important;
+        border-radius: 12px !important;
+        object-fit: contain !important;
+        object-position: center !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    /* 封面隐藏状态 - 完全隐藏 */
+    .detail-cover.hidden {
+        display: none !important;
+    }
+
+    /* 右侧区域 - 歌词/播放列表面板（与封面切换显示，在同一位置） */
+    .detail-left > .detail-right {
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
+        max-height: none !important;
+        min-width: auto !important;
+        min-height: 0 !important;
+        flex: 55 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        overflow: hidden !important;
+        display: none !important;
+        flex-direction: column !important;
+        position: relative !important;  /* 覆盖桌面端的 fixed */
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 10px 20px !important;
+        box-sizing: border-box !important;
+        border: none !important;
+        outline: none !important;
+        top: auto !important;           /* 清除桌面端的 top */
+        left: auto !important;          /* 清除桌面端的 left */
+    }
+
+    /* 面板显示状态 */
+    .detail-left > .detail-right.active {
+        display: flex !important;
+    }
+
+    /* 信息区域 - 占 45% */
+    .detail-info-section {
+        width: 100% !important;
+        gap: 4px !important;
+        flex-shrink: 0 !important;
+        text-align: center !important;
+        position: static !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        padding: 8px 16px calc(12px + env(safe-area-inset-bottom)) 20px !important;
+        background: transparent !important;
+        box-sizing: border-box !important;
+        flex: 45 !important;
+    }
+
+    /* 标题行 - 带更多按钮 */
+    .detail-title-row {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+
+    .detail-title {
+        font-size: 20px !important;
+        font-weight: 600 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .detail-title-more {
+        width: 24px !important;
+        height: 24px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        opacity: 0.8 !important;
+        flex-shrink: 0 !important;
+    }
+
+    .detail-title-more svg {
+        width: 20px !important;
+        height: 20px !important;
+    }
+
+    .detail-meta-row {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        font-size: 13px !important;
+    }
+
+    .detail-artist {
+        font-size: 13px !important;
+        opacity: 0.8 !important;
+    }
+
+    .detail-album {
+        font-size: 13px !important;
+        opacity: 0.6 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    /* 进度条区域 - 保持桌面版样式 */
+    .detail-progress-section {
+        width: 100% !important;
+        margin-top: 8px !important;
+        flex-shrink: 0 !important;
+        padding: 4px 0 !important;
+    }
+
+    .detail-progress-bar {
+        height: 3px !important;
+        background: var(--white-20) !important;
+        border-radius: 4px !important;
+    }
+
+    .detail-progress-fill {
+        height: 100% !important;
+        background: var(--primary-color) !important;
+        border-radius: 3px !important;
+    }
+
+    .detail-time {
+        font-size: 12px !important;
+        opacity: 0.8 !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        margin-top: 6px !important;
+    }
+
+    /* 手机端来源标签样式 */
+    .detail-source-tag {
+        font-size: 9px !important;
+        padding: 1px 4px !important;
+        border-radius: 2px !important;
+        margin-left: 4px !important;
+        display: none !important;
+    }
+
+    .detail-source-tag.cache {
+        background: var(--white-20) !important;
+        color: var(--text-color) !important;
+        border: 1px solid var(--white-30) !important;
+        display: inline-block !important;
+    }
+
+    .detail-source-tag.local {
+        background: var(--white-20) !important;
+        color: var(--text-color) !important;
+        border: 1px solid var(--white-30) !important;
+        display: inline-block !important;
+    }
+
+    .detail-source-wrapper {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        line-height: 1.25 !important;
+    }
+
+    .detail-source-line {
+        font-size: 11px !important;
+    }
+
+    /* 音量控制区域 - 宽度自适应 */
+    .detail-volume-section {
+        width: 100vw !important;
+        max-width: none !important;
+        margin: 4px 0 0 0 !important;
+        flex-shrink: 0 !important;
+        padding: 4px 20px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .detail-volume-bar {
+        height: 8px !important;
+        background: var(--white-20) !important;
+        border-radius: 3px !important;
+        flex: 1 !important;
+        cursor: pointer !important;
+        position: relative !important;
+    }
+
+    .detail-volume-fill {
+        height: 100% !important;
+        background: var(--text-color) !important;
+        border-radius: 3px !important;
+        position: relative !important;
+    }
+
+    .detail-volume-thumb {
+        position: absolute !important;
+        right: -8px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        width: 16px !important;
+        height: 16px !important;
+        background: var(--text-color) !important;
+        border-radius: 50% !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    .detail-volume-icon {
+        font-size: 20px !important;
+        color: var(--white-60) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 32px !important;
+        height: 32px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .detail-volume-icon svg {
+        width: 20px !important;
+        height: 20px !important;
+    }
+
+    .detail-volume-min {
+        margin-right: 0 !important;
+    }
+
+    .detail-volume-max {
+        margin-left: 0 !important;
+    }
+
+    /* 控制按钮 - 固定在底部 */
+    .detail-controls {
+        width: 100% !important;
+        gap: 24px !important;
+        margin: 8px 0 4px 0 !important;
+        flex-shrink: 0 !important;
+        justify-content: center !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    /* 所有控制按钮强制透明背景 */
+    .detail-controls button {
+        background: transparent !important;
+        border: none !important;
+        -webkit-tap-highlight-color: transparent !important;
+    }
+
+    .detail-controls button:active,
+    .detail-controls button:focus {
+        background: transparent !important;
+        outline: none !important;
+    }
+
+    .detail-control-btn {
+        background: transparent !important;
+        border: none !important;
+        color: var(--white-90) !important;
+        cursor: pointer !important;
+        padding: 3px !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: auto !important;
+        height: auto !important;
+        -webkit-tap-highlight-color: transparent !important;
+    }
+
+    .detail-control-btn:active,
+    .detail-control-btn:focus {
+        background: transparent !important;
+        outline: none !important;
+    }
+
+    .detail-control-btn.detail-play-btn {
+        width: 64px !important;
+        height: 64px !important;
+        background: transparent !important;
+        -webkit-tap-highlight-color: transparent !important;
+    }
+
+    .detail-control-btn.detail-play-btn:active,
+    .detail-control-btn.detail-play-btn:focus {
+        background: transparent !important;
+        outline: none !important;
+    }
+
+    .detail-control-btn svg {
+        width: 36px !important;
+        height: 36px !important;
+    }
+
+    .detail-control-btn.detail-play-btn svg {
+        width: 36px !important;
+        height: 36px !important;
+    }
+
+    /* 底部功能区 - 固定在底部，按钮居中 */
+    .detail-extra-controls {
+        width: fit-content !important;
+        min-width: fit-content !important;
+        gap: 0 !important;
+        margin: 4px auto 0 auto !important;
+        justify-content: center !important;
+        padding: 4px 0 !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    /* 所有按钮强制透明背景 */
+    .detail-extra-controls button {
+        background: transparent !important;
+        border: none !important;
+        -webkit-tap-highlight-color: transparent !important;
+    }
+
+    .detail-extra-controls button:active,
+    .detail-extra-controls button:focus {
+        background: transparent !important;
+        outline: none !important;
+    }
+
+    .detail-extra-controls .detail-extra-btn {
+        background: none !important;
+        border: none !important;
+        color: var(--white-70) !important;
+        cursor: pointer !important;
+        padding: 0 !important;
+        transition: all 0.2s !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 4px !important;
+        flex-shrink: 0 !important;
+        min-width: 36px !important;
+        font-size: 15px !important;
+    }
+
+    .detail-extra-controls .detail-extra-btn:active,
+    .detail-extra-controls .detail-extra-btn:focus {
+        background: transparent !important;
+        outline: none !important;
+    }
+
+    .detail-extra-btn svg {
+        width: 28px !important;
+        height: 28px !important;
+    }
+
+    /* 下载按钮状态 */
+    .detail-extra-btn.downloaded {
+        color: var(--primary-color) !important;
+    }
+
+    .detail-extra-btn.downloading {
+        color: var(--info-color) !important;
+    }
+
+    /* 歌词面板 */
+    .detail-lyrics {
+        flex: 1 !important;
+        min-height: 0 !important;
+        /* 底部留白：歌词滚到底时与屏幕底保持 20px 间距 */
+        padding: 0 20px 20px !important;
+        overflow-y: auto !important;
+        text-align: left !important;
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+        box-sizing: border-box !important;
+        border: none !important;
+        outline: none !important;
+    }
+
+    .detail-lyrics::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    /* 移动端歌词行样式 - 覆盖桌面版 */
+    .detail-lyrics .lyrics-placeholder {
+        color: var(--white-25) !important;
+        font-size: 18px !important;
+        padding-top: 150px !important;
+        text-align: left !important;
+    }
+
+    .detail-lyrics .lyrics-line {
+        font-size: 22px !important;
+        line-height: 2 !important;
+        color: var(--white-30) !important;
+        transition: all 0.3s ease !important;
+        padding: 4px 0 !important;
+        text-align: left !important;
+        border: none !important;
+        outline: none !important;
+        margin: 0 !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif !important;
+        font-weight: 500 !important;
+    }
+
+    .detail-lyrics .lyrics-line.active {
+        font-size: 26px !important;
+        color: var(--primary-color) !important;
+        font-weight: 600 !important;
+        text-shadow: 0 0 20px var(--primary-glow) !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif !important;
+    }
+
+    /* 播放列表面板 - 移动端完整样式 */
+    .detail-playlist {
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        padding: 0 !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+    }
+
+    .detail-playlist .playlist-header {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: baseline !important;
+        gap: 8px !important;
+        padding: 0 0 12px 0 !important;
+        border-bottom: 1px solid var(--white-10) !important;
+        flex-shrink: 0 !important;
+    }
+
+    .detail-playlist .playlist-header-right {
+        display: flex !important;
+        align-items: baseline !important;
+        gap: 12px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .detail-playlist .playlist-title {
+        font-size: 18px !important;
+        font-weight: 600 !important;
+        color: var(--text-color) !important;
+    }
+
+    .detail-playlist .playlist-count {
+        font-size: 14px !important;
+        color: var(--white-50) !important;
+    }
+
+    .detail-playlist .playlist-content {
+        flex: 1 !important;
+        overflow-y: auto !important;
+        padding: 0 !important;
+        margin-top: 8px !important;
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+    }
+
+    .detail-playlist .playlist-content::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    .detail-playlist .playlist-empty {
+        text-align: center !important;
+        padding: 60px 20px !important;
+        color: var(--white-40) !important;
+        font-size: 16px !important;
+    }
+
+    .detail-playlist .playlist-item {
+        display: flex !important;
+        align-items: center !important;
+        padding: 10px 12px !important;
+        cursor: pointer !important;
+        border-radius: 8px !important;
+        transition: all 0.2s !important;
+        gap: 10px !important;
+        margin-bottom: 2px !important;
+        border-bottom: 1px solid var(--white-08) !important;
+    }
+
+    .detail-playlist .playlist-item-index {
+        width: 24px !important;
+        text-align: center !important;
+        font-size: 13px !important;
+        color: var(--white-40) !important;
+        flex-shrink: 0 !important;
+    }
+
+    .detail-playlist .playlist-item.playing .playlist-item-index {
+        color: var(--primary-color) !important;
+    }
+
+
+
+    .detail-playlist .playlist-item.playing {
+        background: var(--list-active-color) !important;
+    }
+
+    .detail-playlist .playlist-item-cover {
+        width: 44px !important;
+        height: 44px !important;
+        border-radius: 6px !important;
+        overflow: hidden !important;
+        flex-shrink: 0 !important;
+        background: var(--white-10) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .detail-playlist .playlist-item-cover img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+    }
+
+    .detail-playlist .playlist-item-cover .default-cover {
+        font-size: 20px !important;
+        color: var(--white-30) !important;
+    }
+
+    .detail-playlist .playlist-item-info {
+        flex: 1 !important;
+        min-width: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 3px !important;
+    }
+
+    .detail-playlist .playlist-item-row1 {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
+    .detail-playlist .playlist-item-title {
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        color: var(--text-color) !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        flex: 1 !important;
+        min-width: 0 !important;
+    }
+
+    .detail-playlist .playlist-item.playing .playlist-item-title {
+        color: var(--primary-color) !important;
+    }
+
+    .detail-playlist .playlist-item-row1-right {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .detail-playlist .playlist-item-duration {
+        font-size: 12px !important;
+        color: var(--white-50) !important;
+    }
+
+    .detail-playlist .playlist-item-source {
+        font-size: 10px !important;
+        color: var(--white-40) !important;
+        background: var(--white-10) !important;
+        padding: 2px 5px !important;
+        border-radius: 4px !important;
+    }
+
+    .detail-playlist .playlist-item-row2 {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
+    .detail-playlist .playlist-item-row2-left {
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        flex: 1 !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .detail-playlist .playlist-item-artist {
+        font-size: 12px !important;
+        color: var(--white-50) !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .detail-playlist .playlist-item-separator {
+        font-size: 12px !important;
+        color: var(--white-40) !important;
+        flex-shrink: 0 !important;
+    }
+
+    .detail-playlist .playlist-item-album {
+        font-size: 11px !important;
+        color: var(--white-40) !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        max-width: 100px !important;
+    }
+
+    .detail-playlist .playlist-item-remove {
+        width: 24px !important;
+        height: 24px !important;
+        border-radius: 50% !important;
+        border: none !important;
+        background: var(--white-10) !important;
+        color: var(--white-60) !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 14px !important;
+        opacity: 1 !important;
+        transition: all 0.2s !important;
+    }
+
+    .detail-playlist .playlist-item-remove:active {
+        color: var(--danger-color) !important;
+    }
+
+    /* 面板关闭按钮 */
+    .detail-right::before {
+        display: none !important;
+    }
+
+    /* 面板遮罩 */
+    .player-detail-overlay::after {
+        display: none !important;
+    }
+}
+
+/* ============================================
+   小屏幕竖屏适配 (如 iPhone SE)
+   ============================================ */
+@media screen and (max-width: 480px) and (orientation: portrait) {
+    .player-detail-content {
+        padding: 60px 0 0 0 !important;
+        gap: 0 !important;
+    }
+
+    .detail-cover {
+        width: 100% !important;
+        height: auto !important;
+        max-width: 100% !important;
+        max-height: none !important;
+        min-width: auto !important;
+        min-height: 0 !important;
+        flex: 45 !important;
+        display: flex !important;
+        position: relative !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 8px 16px !important;
+    }
+
+    .detail-cover img {
+        max-width: 100% !important;
+        max-height: 100% !important;
+        width: auto !important;
+        height: auto !important;
+        object-fit: contain !important;
+        object-position: center !important;
+        border-radius: 12px !important;
+    }
+
+    .detail-title {
+        font-size: 16px !important;
+    }
+
+    .detail-controls {
+        gap: 12px !important;
+    }
+
+    .detail-control-btn {
+        width: 32px !important;
+        height: 32px !important;
+        background: transparent !important;
+        border: none !important;
+        -webkit-tap-highlight-color: transparent !important;
+    }
+
+    .detail-control-btn:active,
+    .detail-control-btn:focus {
+        background: transparent !important;
+        outline: none !important;
+    }
+
+    .detail-control-btn svg {
+        width: 36px !important;
+        height: 36px !important;
+    }
+
+    .detail-control-btn.detail-play-btn {
+        width: 48px !important;
+        height: 48px !important;
+        background: transparent !important;
+        -webkit-tap-highlight-color: transparent !important;
+    }
+
+    .detail-control-btn.detail-play-btn:active,
+    .detail-control-btn.detail-play-btn:focus {
+        background: transparent !important;
+        outline: none !important;
+    }
+
+    .detail-control-btn.detail-play-btn svg {
+        width: 36px !important;
+        height: 36px !important;
+    }
+
+    .detail-extra-btn {
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 14px !important;
+    }
+
+    .detail-extra-btn:active,
+    .detail-extra-btn:focus {
+        background: transparent !important;
+        outline: none !important;
+    }
+
+    .detail-extra-btn svg {
+        width: 28px !important;
+        height: 28px !important;
+    }
+
+    .detail-left > .detail-right {
+        width: 100% !important;
+        height: 100% !important;
+        flex: 55 !important;
+        padding: 8px 8px !important;
+        border-radius: 0 !important;
+    }
+
+    .detail-lyrics,
+    .detail-playlist {
+        width: 100% !important;
+        max-height: 100% !important;
+    }
+}

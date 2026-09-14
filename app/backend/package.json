@@ -1,0 +1,38 @@
+{
+  "name": "musichub-server",
+  "version": "1.0.4",
+  "description": "MusicHub Web Server - Unified Node.js Backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node --test",
+    "build:lx": "node lx/build/build.js"
+  },
+  "dependencies": {
+    "axios": "^0.27.2",
+    "bcrypt": "^6.0.0",
+    "big-integer": "^1.6.52",
+    "cheerio": "^1.0.0-rc.10",
+    "cors": "^2.8.5",
+    "crypto-js": "^4.2.0",
+    "dayjs": "^1.11.10",
+    "express": "^4.18.2",
+    "fs-extra": "^11.4.0",
+    "he": "^1.2.0",
+    "ip": "^2.0.1",
+    "multer": "^1.4.5-lts.1",
+    "music-metadata": "^11.15.0",
+    "node-cron": "^3.0.3",
+    "node-id3": "^0.2.9",
+    "qs": "^6.11.2",
+    "sharp": "^0.35.4",
+    "sqlite3": "^6.0.1",
+    "webdav": "^3.6.2"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "eslint": "^10.2.1",
+    "globals": "^17.5.0"
+  }
+}

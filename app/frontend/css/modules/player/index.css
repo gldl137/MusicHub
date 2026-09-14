@@ -1,0 +1,503 @@
+        /* 播放器 - 半透明毛玻璃（透出下层内容滚动，保持分层投影） */
+        .player-bar {
+            height: var(--music-bar-height);
+            background: rgba(35, 35, 38, 0.32) !important;
+            backdrop-filter: blur(18px) saturate(1.3) !important;
+            -webkit-backdrop-filter: blur(18px) saturate(1.3) !important;
+            border-top: 1px solid color-mix(in srgb, var(--divider-color) 60%, transparent);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 -4px 20px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            width: 100vw;
+            /* 开启硬件加速，防止闪烁 */
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+            will-change: auto;
+        }
+
+        /* 浅色主题：白色玻璃 */
+        [data-theme="light"] .player-bar {
+            background: rgba(255, 255, 255, 0.32);
+        }
+
+        /* 播放器栏中的进度条圆点隐藏 */
+        .player-bar .detail-progress-thumb {
+            display: none !important;
+        }
+
+        /* 播放器栏中的进度条填充使用主题色 */
+        .player-bar .detail-progress-fill {
+            background: var(--primary-color);
+            border-radius: 3px;
+        }
+
+        /* 播放器栏进度条加粗（默认 6px，悬停变 9px），更好点击、更好看 */
+        .player-bar .detail-progress-bar {
+            height: 6px;
+            border-radius: 3px;
+            transition: height 0.15s ease;
+        }
+
+        .player-bar:hover .detail-progress-bar {
+            height: 9px;
+        }
+
+
+
+        /* 内容区域 - 四区域比例布局 */
+        .player-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 0 16px;
+            gap: 12px;
+        }
+
+        /* ============================================
+           四区域比例布局 (桌面端)
+           1. 歌曲信息区 25% - 左对齐
+           2. 来源缓存区 5% - 居中 (桌面端显示，移动端隐藏)
+           3. 播放控制区 40% - 居中 (占据中间主要位置)
+           4. 功能按钮区 30% - 右对齐
+           ============================================ */
+
+        /* 1. 歌曲信息区域 (25%) - 左对齐 */
+        .player-info-section {
+            flex: 25;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            overflow: hidden;
+        }
+
+        .player-info-section .player-cover-wrapper {
+            flex-shrink: 0;
+        }
+
+        .player-info-section .player-cover {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .player-info-section .player-cover:hover {
+            transform: scale(1.05);
+        }
+
+        .player-info-section .player-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .player-info-text {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            overflow: hidden;
+        }
+
+        .player-info-text .player-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .player-info-text .player-meta {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .player-info-text .player-artist,
+        .player-info-text .player-album {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 100%;
+            flex-shrink: 1;
+            min-width: 0;
+        }
+
+        .player-info-text .player-meta-separator {
+            opacity: 0.5;
+        }
+
+        /* 2. 来源缓存区域 - 居中，上下排列（本地/缓存在上，来源在下）。
+           宽度按内容自适应：来源名「音源别名-插件名」较长，不能被压窄截断。 */
+        .player-source-section {
+            flex: 0 0 auto;
+            min-width: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            overflow: visible;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .player-source-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .player-source-stack {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            line-height: 1.2;
+        }
+
+        .player-source-section .player-source-line {
+            font-size: 10px;
+            color: var(--text-color);
+            white-space: nowrap; /* 完整显示来源名，不省略 */
+            line-height: 13px;
+        }
+
+        .player-source-section .player-source-line:first-child {
+            color: var(--white-60);
+            font-weight: 600;
+        }
+
+        .player-source-section .player-local-tag,
+        .player-source-section .player-source-tag {
+            font-size: 10px;
+            padding: 1px 5px;
+            background: var(--white-15);
+            color: var(--text-color);
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            line-height: 14px;
+        }
+
+        /* 3. 播放控制区域 (40%) - 居中 (占据播放器中间主要位置) */
+        .player-control-section {
+            flex: 40;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .player-control-section .player-time-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .player-control-section .player-time-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-family: 'SF Mono', monospace;
+            min-width: 40px;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .player-control-section .player-control-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .player-control-section .player-control-btn:hover {
+            color: var(--text-color);
+            transform: scale(1.08);
+            background: var(--white-15);
+        }
+
+        .player-control-section .player-control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .player-control-section .player-control-btn.play {
+            width: 48px;
+            height: 48px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+        }
+
+        .player-control-section .player-control-btn.play:hover {
+            color: var(--text-color);
+            transform: scale(1.08);
+            background: var(--white-15);
+        }
+
+        .player-control-section .player-control-btn.play:active {
+            background: var(--white-20);
+        }
+
+        /* 4. 功能按钮区域 (30%) - 右对齐 */
+        .player-function-section {
+            flex: 30;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .player-function-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .player-function-group .player-func-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+        }
+
+        .player-function-group .player-func-btn:hover {
+            color: var(--text-color);
+            background: var(--white-15);
+            transform: scale(1.08);
+        }
+
+        .player-function-group .player-func-btn:active {
+            transform: scale(0.95);
+        }
+
+        .player-function-group .player-func-btn.active {
+            color: var(--primary-color);
+            background: var(--white-10);
+        }
+
+        /* 音源切换弹窗 */
+        .source-switch-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+        /* 音源弹窗需盖过播放详情页（详情 .player-detail-overlay z-index:99999），提高此弹窗层级 */
+        #source-switch-modal.modal-overlay {
+            z-index: 100000;
+        }
+        .source-switch-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            background: var(--bg-tertiary);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+        .source-switch-item:hover {
+            background: var(--surface-hover);
+        }
+        .source-switch-item.active {
+            border-color: var(--primary-color);
+            background: rgba(29, 185, 84, 0.12);
+        }
+        .source-switch-item.disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+        .source-switch-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        .source-switch-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+        .source-switch-check {
+            color: var(--primary-color);
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .source-switch-tip {
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--text-tertiary);
+            line-height: 1.5;
+        }
+
+        /* 下载按钮状态 */
+        .player-function-group .player-func-btn.downloaded {
+            color: var(--primary-color);
+        }
+
+        .player-function-group .player-func-btn.downloading {
+            color: var(--info-color);
+        }
+
+        /* 音量滑块 */
+        .player-function-group .player-volume-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .player-function-group .player-volume-slider {
+            width: 80px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .player-function-group .player-volume-track {
+            width: 100%;
+            height: 4px;
+            background: var(--white-10);
+            border-radius: 2px;
+            position: relative;
+        }
+
+        .player-function-group .player-volume-fill {
+            height: 100%;
+            background: var(--primary-color);
+            border-radius: 2px;
+            position: relative;
+        }
+
+        .player-function-group .player-volume-thumb {
+            position: absolute;
+            right: -5px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 10px;
+            background: var(--text-color);
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 音质按钮特殊样式 */
+        .player-function-group .player-quality-btn span {
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            background: var(--white-10);
+        }
+
+        /* 桌面端功能区 - 默认显示 */
+        .player-desktop-functions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 播放条自适应（手机端 / 电脑端同一套按钮）：
+           宽度变窄时按优先级 pa1 → pa6 逐级隐藏，最少保留「播放 + 下一首」。
+           数字越小越先隐藏：
+             pa1 切换音源 → pa2 下载 / 播放列表 / 音质 → pa3 随机 / 循环 / 来源
+             → pa4 收藏 / 音量滑块 → pa5 音量按钮 / 时间 → pa6 停止 / 上一首 */
+        @media screen and (max-width: 1300px) {
+            .pa1 { display: none !important; }
+        }
+
+        @media screen and (max-width: 1150px) {
+            .pa1, .pa2 { display: none !important; }
+        }
+
+        @media screen and (max-width: 1000px) {
+            .pa1, .pa2, .pa3 { display: none !important; }
+
+            /* 按钮变少后重新分配三块区域的比例，保证控制区居中 */
+            .player-info-section { flex: 40 !important; }
+            .player-control-section { flex: 45 !important; }
+            .player-function-section { flex: 15 !important; }
+        }
+
+        @media screen and (max-width: 860px) {
+            .pa1, .pa2, .pa3, .pa4 { display: none !important; }
+        }
+
+        @media screen and (max-width: 720px) {
+            .pa1, .pa2, .pa3, .pa4 { display: none !important; }
+
+            .player-info-section { flex: 45 !important; }
+            .player-control-section { flex: 40 !important; }
+            .player-function-section { flex: 15 !important; }
+        }
+
+        @media screen and (max-width: 600px) {
+            /* 此区间辅助按钮已按优先级逐级隐藏（pa1→pa6），仅保留 播放+下一首（无 pa 类），保持居中布局 */
+            .pa1, .pa2, .pa3, .pa4, .pa6 { display: none !important; }
+
+            .player-info-section { flex: 55 !important; }
+            .player-control-section { flex: 30 !important; }
+            .player-function-section { flex: 15 !important; }
+        }
+
+        @media screen and (max-width: 500px) {
+            /* 最窄屏（≤500px，确实只剩 播放+下一首）：控制区整体靠右对齐，信息区占满左侧剩余空间。
+               时长(pa5)在此最窄断点才隐藏，避免挤占右对齐的播放/下一首按钮。 */
+            .pa5 { display: none !important; }
+
+            .player-info-section { flex: 1 1 auto !important; }
+            .player-control-section { flex: 0 0 auto !important; justify-content: flex-end; margin-left: auto; gap: 16px; }
+            .player-function-section { flex: 0 0 auto !important; }
+        }
+
+

@@ -1,0 +1,29 @@
+<!-- 下载管理页面 -->
+<div class="page" id="page-download" style="height: 100%; display: flex; flex-direction: column; overflow: hidden;">
+    <div class="downloads-header" style="flex-shrink: 0;">
+        <div class="downloads-tabs">
+            <button class="tab-btn active" data-tab="downloaded" onclick="switchDownloadTab('downloaded')">已下载</button>
+            <button class="tab-btn" data-tab="downloading" onclick="switchDownloadTab('downloading')">下载中</button>
+        </div>
+        <div class="downloads-actions">
+            <button class="action-btn clear-btn" id="clear-downloaded-btn" onclick="clearDownloadedList()" title="清空列表">清空</button>
+            <button class="action-btn clear-btn" id="clear-downloading-btn" onclick="clearDownloadingList()" title="清空任务" style="display: none;">清空</button>
+        </div>
+    </div>
+    <div class="downloads-content" style="flex: 1; overflow-y: auto; min-height: 0;">
+        <div class="tab-content active" id="downloaded-tab">
+            <div id="downloaded-list" class="downloads-list">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-content" id="downloading-tab">
+            <div id="downloading-list" class="downloads-list">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

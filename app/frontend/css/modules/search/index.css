@@ -1,0 +1,29 @@
+/* ==================== 搜索页面样式 ==================== */
+
+.search-box {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    max-width: 600px;
+}
+
+.search-input {
+    flex: 1;
+    padding: 12px 16px;
+    background: var(--surface-color);
+    border: 1px solid var(--divider-color);
+    border-radius: var(--radius-lg);
+    color: var(--text-color);
+    font-size: 14px;
+    outline: none;
+    transition: var(--transition-base);
+}
+
+.search-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(29, 185, 84, 0.1);
+}
+
+.search-input::placeholder {
+    color: var(--text-tertiary);
+}

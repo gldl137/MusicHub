@@ -1,0 +1,769 @@
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            box-shadow: var(--shadow-glow);
+            transition: var(--transition-base);
+        }
+
+        .logo:hover .logo-icon {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(29, 185, 84, 0.5);
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .logo-text-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .logo-version {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 16px 12px 12px;
+            overflow-y: auto;
+        }
+
+        /* 侧边栏底部：用户菜单区（贴近底部，避开底部播放栏高度——桌面端必须保留此避让） */
+        .sidebar-footer {
+            flex-shrink: 0;
+            padding: 10px 12px calc(var(--music-bar-height) + 6px);
+            border-top: 1px solid var(--divider-color);
+        }
+
+        .sidebar-footer .user-info {
+            width: 100%;
+            height: 42px;
+            padding: 0 8px;
+        }
+
+        .nav-section {
+            margin-bottom: 24px;
+        }
+
+        .nav-section-title {
+            padding: 8px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            transition: var(--transition-base);
+            margin: 4px 0;
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 0;
+            background: var(--primary-color);
+            border-radius: 0 2px 2px 0;
+            transition: var(--transition-base);
+        }
+
+        .nav-item:hover {
+            background: var(--surface-hover);
+            color: var(--text-color);
+        }
+
+        .nav-item.active {
+            background: var(--list-active-color);
+            color: var(--primary-color);
+        }
+
+        .nav-item.active::before {
+            height: 60%;
+        }
+
+        .nav-item-create {
+            border: 1px dashed var(--border-color);
+            background: transparent;
+        }
+
+        .nav-item-create:hover {
+            border-color: var(--primary-color);
+            background: var(--list-active-color);
+        }
+
+        .nav-action-btn {
+            opacity: 0.6;
+        }
+
+        .nav-action-btn:hover {
+            opacity: 1;
+            color: var(--primary-color);
+            background: var(--surface-hover);
+        }
+
+        .nav-section:hover .nav-action-btn {
+            opacity: 1;
+        }
+
+        /* 设置按钮和下拉菜单 */
+        .settings-btn:hover {
+            color: var(--primary-color);
+            background: var(--surface-hover);
+        }
+
+        .settings-dropdown {
+            animation: dropdownFadeIn 0.15s ease-out;
+        }
+
+        @keyframes dropdownFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .settings-menu-item:hover {
+            background: var(--surface-hover);
+        }
+
+        .settings-menu-item:active {
+            background: var(--list-active-color);
+        }
+
+        /* 设置菜单卡片 */
+        .settings-menu-card:hover {
+            background: var(--surface-hover) !important;
+            border-color: var(--primary-color) !important;
+            transform: translateX(4px);
+        }
+
+        /* 设置页面标签页 */
+        .settings-tabs {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+        }
+
+        .settings-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border: 1px solid transparent;
+        }
+
+        .settings-tab:hover {
+            background: var(--surface-hover);
+            color: var(--text-primary);
+        }
+
+        .settings-tab.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .settings-tab svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 2;
+        }
+
+        .settings-content {
+            padding: 24px 0;
+        }
+
+        .settings-group {
+            /* margin settings removed */
+        }
+
+        .settings-group-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px 24px;
+        }
+
+        .settings-item {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--divider-color);
+            gap: 8px;
+        }
+
+        .settings-grid .settings-item:nth-last-child(-n+2):nth-child(odd),
+        .settings-grid .settings-item:last-child:nth-child(even) {
+            border-bottom: none;
+        }
+
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+
+        .settings-item-label {
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .settings-item-desc {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+        }
+
+        .settings-item-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .settings-item-control .form-input,
+        .settings-item-control select {
+            width: 100% !important;
+        }
+
+        .settings-item-control input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--primary-color);
+        }
+
+        .nav-item-icon {
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition-fast);
+        }
+
+        .nav-item-icon svg {
+            width: 100%;
+            height: 100%;
+            stroke-width: 1.8;
+        }
+
+        .nav-item:hover .nav-item-icon {
+            transform: scale(1.1);
+            color: var(--primary-color);
+        }
+
+        .nav-item.active .nav-item-icon {
+            color: var(--primary-color);
+        }
+
+        .nav-item-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* 歌单封面图 */
+        .playlist-cover-img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        /* 公开歌单右上角角标 */
+        .playlist-public-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 48px;
+            height: 48px;
+            overflow: hidden;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .playlist-public-badge::after {
+            content: '公开';
+            position: absolute;
+            top: 6px;
+            right: -14px;
+            width: 56px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 600;
+            line-height: 1;
+            color: #fff;
+            background: var(--primary-color, #1db954);
+            box-shadow: 0 1px 2px rgba(0,0,0,.2);
+            transform: rotate(45deg);
+            transform-origin: center;
+            white-space: nowrap;
+        }
+
+        .sidebar-cover {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--background-color);
+            position: relative; /* 页头 absolute 浮起的定位基准 */
+        }
+
+        .header {
+            height: var(--header-height);
+            /* 半透明毛玻璃（与底部播放器同参数）；染色详情页时 --header-bg 为封面提取色 rgba（页头随之变色）。
+               背景用「整体值变量」，不用 rgba(var() 分量写法——部分内核不支持分量替换会整体失效变纯黑 */
+            background: var(--header-bg, rgba(28, 28, 30, 0.32));
+            backdrop-filter: blur(18px) saturate(1.3);
+            -webkit-backdrop-filter: blur(18px) saturate(1.3);
+            border-bottom: 1px solid var(--divider-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            /* 浮在内容上方（脱离文档流）：滚动内容从页头后方经过，毛玻璃才有效果
+               （与手机端同款方案，见 mobile.css） */
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        /* 歌单详情页：顶部标题文字居中（返回按钮保持在左侧） */
+        .header .header-title.playlist-detail-title {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 60%;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex: 1;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-color);
+            white-space: nowrap;
+            letter-spacing: -0.3px;
+        }
+
+        /* 列表主页：顶部标题居中（排行榜/热门歌单/电台/下载管理/下载订阅）
+           （本地音乐的标题由其模块 JS 内联样式居中，同款效果） */
+        .main-content:has(#page-toplist.active) .header .header-title,
+        .main-content:has(#page-recommend.active) .header .header-title,
+        .main-content:has(#page-lx-toplist.active) .header .header-title,
+        .main-content:has(#page-lx-recommend.active) .header .header-title,
+        .main-content:has(#page-radio.active) .header .header-title,
+        .main-content:has(#page-download.active) .header .header-title,
+        .main-content:has(#page-subscribed-toplist.active) .header .header-title {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: var(--transition-base);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-color) 100%);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md), var(--shadow-glow);
+        }
+
+        .btn-secondary {
+            background: var(--surface-color);
+            color: var(--text-color);
+            border: 1px solid var(--divider-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--surface-hover);
+            border-color: var(--text-secondary);
+            transform: translateY(-1px);
+        }
+
+        .content-area {
+            flex: 1;
+            height: 100%;
+            overflow-y: auto;
+            /* 顶部留出浮起页头的高度（内容从页头下方开始，滚动时穿过页头后方）；
+               底部留出 fixed 播放条的高度（内容可延伸到播放条后方，播放条毛玻璃生效） */
+            padding: calc(var(--header-height) + 16px) 16px calc(var(--music-bar-height) + 12px) 16px;
+            width: 100%;
+            box-sizing: border-box;
+            transition: var(--transition-base);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 设置页面只保留左右padding */
+        html body #page-settings #settings-content-container {
+            padding: 0 1px 0 1px !important;
+        }
+
+        /* 桌面端媒体查询 */
+        @media screen and (min-width: 1401px) {
+            /* 桌面端设置页面铺满宽度 */
+            #page-settings {
+                width: 100% !important;
+                max-width: 100% !important;
+                flex: 1;
+                display: none;
+                flex-direction: column;
+                overflow: hidden;
+                background: var(--background-color);
+            }
+
+            #page-settings.active {
+                display: flex;
+            }
+
+            #page-settings .settings-content {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+        }
+
+        /* ===== 统一各菜单页面主滚动区(右侧滑块)样式 ===== */
+        .content-area,
+        #subscribed-toplist-container,
+        .downloads-content .tab-content,
+        .settings-wrapper,
+        .settings-content,
+        .logs-content,
+        .playlist-detail-table-wrapper {
+            scrollbar-width: thin;
+            scrollbar-color: var(--text-secondary) transparent;
+        }
+
+        .content-area::-webkit-scrollbar,
+        #subscribed-toplist-container::-webkit-scrollbar,
+        .downloads-content .tab-content::-webkit-scrollbar,
+        .settings-wrapper::-webkit-scrollbar,
+        .settings-content::-webkit-scrollbar,
+        .logs-content::-webkit-scrollbar,
+        .playlist-detail-table-wrapper::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .content-area::-webkit-scrollbar-track,
+        #subscribed-toplist-container::-webkit-scrollbar-track,
+        .downloads-content .tab-content::-webkit-scrollbar-track,
+        .settings-wrapper::-webkit-scrollbar-track,
+        .settings-content::-webkit-scrollbar-track,
+        .logs-content::-webkit-scrollbar-track,
+        .playlist-detail-table-wrapper::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .content-area::-webkit-scrollbar-thumb,
+        #subscribed-toplist-container::-webkit-scrollbar-thumb,
+        .downloads-content .tab-content::-webkit-scrollbar-thumb,
+        .settings-wrapper::-webkit-scrollbar-thumb,
+        .settings-content::-webkit-scrollbar-thumb,
+        .logs-content::-webkit-scrollbar-thumb,
+        .playlist-detail-table-wrapper::-webkit-scrollbar-thumb {
+            background: var(--text-secondary);
+            border-radius: 4px;
+        }
+
+        .content-area::-webkit-scrollbar-thumb:hover,
+        #subscribed-toplist-container::-webkit-scrollbar-thumb:hover,
+        .downloads-content .tab-content::-webkit-scrollbar-thumb:hover,
+        .settings-wrapper::-webkit-scrollbar-thumb:hover,
+        .settings-content::-webkit-scrollbar-thumb:hover,
+        .logs-content::-webkit-scrollbar-thumb:hover,
+        .playlist-detail-table-wrapper::-webkit-scrollbar-thumb:hover {
+            background: var(--text-color);
+        }
+
+        /* 页面容器：不再自己裁剪/滚动，列表内容自然延伸，
+           由 content-area 统一整页滚动（内容经过页头/播放条后方，毛玻璃生效）
+           !important 压过各模块的 height:100% / overflow:hidden 内部滚动规则 */
+        .content-area > .page {
+            flex: 0 0 auto !important;
+            display: flex;
+            flex-direction: column;
+            height: auto !important;
+            max-height: none !important;
+            min-height: 0;
+            overflow: visible !important;
+        }
+
+        /* 设置页面需要滚动 */
+        #page-settings {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--background-color);
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        #page-settings.active {
+            display: flex;
+        }
+
+        #page-settings > .settings-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* 滚动到底提示 */
+        .scroll-end-tip {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        /* 按钮尺寸变体 */
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #ff7875 0%, #ff4d4f 100%);
+            transform: translateY(-1px);
+        }
+
+        /* 弹窗内容 */
+        .modal-content {
+            background: var(--surface-color);
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 表单样式补充 */
+        .form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--surface-color);
+            border: 1px solid var(--divider-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+            resize: vertical;
+            min-height: 80px;
+            box-sizing: border-box;
+        }
+
+        .form-textarea:focus {
+            border-color: var(--primary-color);
+        }
+
+        /* 弹窗头部 */
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--divider-color);
+        }
+
+        .modal-title {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-secondary);
+            color: var(--text-color);
+        }
+
+        /* 弹窗主体 */
+        .modal-body {
+            padding: 20px;
+        }
+
+        /* 弹窗底部 */
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 16px 20px;
+            border-top: 1px solid var(--divider-color);
+        }
+
+        /* ============================================
+           顶部图标按钮统一样式（返回/搜索/三个点）：
+           32px 圆形 + 半透明灰底 + 无边框 + 灰色图标，手机/电脑通用
+           ============================================ */
+        .header-icon-btn,
+        .btn-back {
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            padding: 0;
+            border: none;
+            border-radius: 50%;
+            background: rgba(128, 128, 128, 0.18);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .header-icon-btn:hover,
+        .btn-back:hover {
+            background: rgba(128, 128, 128, 0.3);
+        }
+
+        .header-icon-btn svg,
+        .btn-back svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
