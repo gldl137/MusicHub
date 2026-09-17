@@ -94,7 +94,7 @@ const SearchModule = {
                       ]
                     : [
                         { id: 'play', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>', text: '播放', primary: false, onClick: () => ButtonActions.handlePlay('search', musicList) },
-                        { id: 'add', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>', text: '添加', onClick: () => ButtonActions.handleAdd('search', musicList, '搜索结果') },
+                        { id: 'add', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>', text: '歌单', onClick: () => ButtonActions.handleAdd('search', musicList, '搜索结果') },
                         { id: 'download', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>', text: '下载', onClick: () => ButtonActions.handleDownload('search', musicList) }
                     ],
                 events: {

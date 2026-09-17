@@ -8,7 +8,7 @@
  *
  * 设计说明：
  *  - 配置存 settings 表（key: wecom_app_config），不依赖 server.js，避免循环依赖
- *  - 各触发操作（清理缓存/插件更新/订阅下载/M3U生成）由 server.js 通过 initWecomApp 注入，
+ *  - 各触发操作（清理缓存/插件更新/订阅下载）由 server.js 通过 initWecomApp 注入，
  *    因为 server.js 已持有这些逻辑的唯一实例（schedulerManager 等）
  *  - 回调路由（/api/wecom-app/callback）不挂鉴权中间件，必须公网可达
  */
@@ -40,12 +40,11 @@ const WECOM_MENU = {
         { type: 'click', name: '插件更新', key: 'MENU_PLUGIN_UPDATE' }
       ]
     },
-    // 一级 2：下载（父菜单，收纳订阅下载 / M3U生成）
+    // 一级 2：下载（父菜单，收纳订阅下载）
     {
       name: '下载',
       sub_button: [
-        { type: 'click', name: '订阅下载', key: 'MENU_SUB_DOWNLOAD' },
-        { type: 'click', name: 'M3U生成', key: 'MENU_M3U_GEN' }
+        { type: 'click', name: '订阅下载', key: 'MENU_SUB_DOWNLOAD' }
       ]
     }
   ]
@@ -161,6 +160,7 @@ const STANDARD_MENU_KEYS = new Set([
   'MENU_CLEAR_CACHE',
   'MENU_PLUGIN_UPDATE',
   'MENU_SUB_DOWNLOAD',
+  // 「M3U生成」已废弃（不再下发该菜单项）；保留该 key 仅用于识别并清理线上历史下发过的旧菜单项
   'MENU_M3U_GEN'
 ]);
 const STANDARD_MENU_NAMES = new Set(['系统', '下载']);
@@ -402,11 +402,6 @@ async function dispatchMenuEvent(event, eventKey, fromUser) {
       actionName = '订阅下载';
       fn = () => deps.schedulerManager &&
         deps.schedulerManager.runSubscriptionUpdate({ sendNotification: true });
-      break;
-    case 'MENU_M3U_GEN':
-      actionName = 'M3U生成';
-      fn = () => deps.schedulerManager &&
-        deps.schedulerManager.runM3uGeneration({ sendNotification: true });
       break;
     default:
       logger.info(MODULE, 'MENU', `未识别的菜单事件: ${eventKey}`, { fromUser });

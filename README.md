@@ -40,7 +40,7 @@
 ## 🚀 快速开始（Docker）
 
 **镜像地址（Docker Hub）**：[`gldl137/musichub`](https://hub.docker.com/r/gldl137/musichub)
-当前版本 `2.0.0`（推荐）；历史版本 tag 与滚动构建见 Docker Hub 页面。
+当前版本 `2.0.1`（推荐）；历史版本 tag 与滚动构建见 Docker Hub 页面。
 
 ### 方式一：直接使用镜像（推荐，无需克隆源码）
 
@@ -49,14 +49,13 @@
 ```yaml
 services:
   musichub:
-    image: gldl137/musichub:2.0.0
+    image: gldl137/musichub:2.0.1
     container_name: musichub
     ports:
       - "8000:8000"          # 左边端口可自行修改，如 "8080:8000"
     volumes:
       - ./data:/app/data         # 数据目录（数据库、插件配置、封面缓存、日志等）
       - ./downloads:/app/downloads   # 下载目录
-      - ./playlists:/app/playlists   # 播放列表目录（M3U）
       - ./music:/app/music           # 本地音乐目录（本地曲库扫描）
     environment:
       - PUID=1000                # 与宿主机用户对齐，避免挂载目录权限问题
@@ -74,9 +73,9 @@ docker compose up -d
 ```bash
 docker run -d --name musichub -p 8000:8000 \
   -v ./data:/app/data -v ./downloads:/app/downloads \
-  -v ./playlists:/app/playlists -v ./music:/app/music \
+  -v ./music:/app/music \
   -e PUID=1000 -e PGID=1000 -e TZ=Asia/Shanghai \
-  --restart unless-stopped gldl137/musichub:2.0.0
+  --restart unless-stopped gldl137/musichub:2.0.1
 ```
 
 ### 方式二：源码构建
@@ -97,7 +96,7 @@ docker compose up -d --build
 ### 升级
 
 ```bash
-docker pull gldl137/musichub:2.0.0
+docker pull gldl137/musichub:2.0.1
 docker compose up -d     # 重建容器，数据保留
 ```
 
@@ -128,11 +127,11 @@ MusicHub/
     │   └── lxmusic/          # 落雪音乐源适配
     ├── frontend/             # 纯静态 Web 播放器（无构建步骤）
     ├── data/                 # 运行时数据（挂载卷，不入库）
-    ├── downloads/  music/  playlists/   # 挂载卷（不入库）
+    ├── downloads/  music/         # 挂载卷（不入库）
     └── scripts/
 ```
 
-> `app/data`、`app/downloads`、`app/music`、`app/playlists` 为运行时挂载目录，其中的个人数据不会提交到仓库。
+> `app/data`、`app/downloads`、`app/music` 为运行时挂载目录，其中的个人数据不会提交到仓库。
 
 ## 🔌 安装插件
 

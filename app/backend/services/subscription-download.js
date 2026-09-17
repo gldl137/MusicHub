@@ -98,7 +98,7 @@ class SubscriptionDownloadService {
      * 下载单个订阅的歌曲
      * 从API实时获取完整数据（与手动按钮相同逻辑）
      * @param {Object} subscription - 订阅对象
-     * @param {Object} options - 选项 { delay: 500, onProgress: fn, force: false }
+     * @param {Object} options - 选项 { delay: 500, onProgress: fn, onSongComplete: fn, force: false }
      * @returns {Promise<Object>} - 下载结果 { downloaded, skipped, failed, totalSongs }
      */
     async downloadSubscription(subscription, options = {}) {
@@ -219,6 +219,22 @@ class SubscriptionDownloadService {
             return result;
         }
 
+        // 预登记：本轮待下载歌曲先写成 pending 记录，使「下载管理 → 下载中」能看到完整任务列表，
+        // 每首下载完成后状态翻转为 completed（同时出现在「已下载」），不再只有“下载中一闪而过”
+        for (const s of toDownload) {
+            try {
+                await this.db.addDownload(
+                    { id: s.id, title: s.title, artist: s.artist, album: s.album },
+                    subscription.platform,
+                    subscription.download_quality || 'standard'
+                );
+            } catch (err) {
+                this.logger.warn(SERVICE_MODULE, 'enqueue', 'Failed to pre-register download record', {
+                    title: s.title, error: err.message
+                });
+            }
+        }
+
         // ========== 第四步：逐个下载（使用API完整数据）==========
         for (let i = 0; i < toDownload.length; i++) {
             const song = toDownload[i];
@@ -240,6 +256,20 @@ class SubscriptionDownloadService {
                     result.downloaded++;
                 } else {
                     result.failed++;
+                }
+
+                // 每首完成后回调：订阅侧据此实时回写统计（前端卡片进度随之增长）
+                if (typeof options.onSongComplete === 'function') {
+                    try {
+                        await options.onSongComplete({
+                            downloaded: result.alreadyDownloaded + result.downloaded,
+                            totalSongs: result.totalSongs,
+                            failed: result.failed,
+                            title: song.title
+                        });
+                    } catch (err) {
+                        this.logger.warn(SERVICE_MODULE, 'onSongComplete', 'Progress callback failed', { error: err.message });
+                    }
                 }
 
                 if (delay > 0 && i < toDownload.length - 1) {

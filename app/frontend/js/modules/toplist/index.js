@@ -703,7 +703,7 @@ const TopListModule = {
                   ]
                 : [
                     { id: 'play', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>', text: '播放', primary: false, disabled: !hasSearchSongs, onClick: () => ButtonActions.handlePlay('toplist-search', allSongs) },
-                    { id: 'add', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>', text: '添加', disabled: !hasSearchSongs, onClick: () => ButtonActions.handleAdd('toplist-search', allSongs, '搜索结果') },
+                    { id: 'add', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>', text: '歌单', disabled: !hasSearchSongs, onClick: () => ButtonActions.handleAdd('toplist-search', allSongs, '搜索结果') },
                     { id: 'download', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>', text: '下载', disabled: !hasSearchSongs, onClick: () => ButtonActions.handleDownload('toplist-search', allSongs) }
                 ],
             events: {
@@ -1086,12 +1086,19 @@ const TopListModule = {
             return;
         }
 
+        // 订阅前弹窗确认：订阅后该榜单会进入「下载订阅」，可手动或定时下载
+        const confirmed = await Notification.confirm(
+            `确定订阅榜单「${currentTopListTitle || window.currentTopListDetailId}」吗？订阅后可在「下载订阅」页面手动或定时下载。`,
+            { title: '确认订阅', confirmText: '订阅', type: 'info' }
+        );
+        if (!confirmed) return;
+
         try {
             // 获取当前榜单的歌曲数量
             const songs = window.currentTopListMusicList || [];
             const totalSongs = songs.length;
 
-            await subscribeToplist(
+            const subscribed = await subscribeToplist(
                 window.currentTopListDetailId,
                 currentTopListPlugin,
                 {
@@ -1102,11 +1109,40 @@ const TopListModule = {
                 },
                 totalSongs
             );
+            // 失败（如已订阅）时 subscribeToplist 内部已提示，保持原按钮状态
+            if (!subscribed) return;
+            this._detailSubscribed = true;
             showToast('已添加到订阅列表（启动）', 'success');
+            this._refreshSubscribeUI();
         } catch (error) {
             console.error('订阅失败:', error);
             showToast('订阅失败', 'error');
         }
+    },
+
+    /**
+     * 订阅 / 取消订阅当前榜单（按当前订阅状态自动切换，供详情页「订阅」按钮调用）
+     */
+    async toggleSubscribeCurrent() {
+        if (!currentTopListPlugin || !window.currentTopListDetailId) {
+            showToast('无法获取榜单信息', 'error');
+            return;
+        }
+        if (!this._detailSubscribed) {
+            await this.subscribeCurrent();
+            return;
+        }
+        const unsubscribed = await unsubscribeToplist(window.currentTopListDetailId, null, currentTopListPlugin);
+        if (!unsubscribed) return; // 用户取消确认或取消订阅失败
+        this._detailSubscribed = false;
+        this._refreshSubscribeUI();
+    },
+
+    /**
+     * 订阅状态变化后刷新页头「⋯」菜单（订阅 ↔ 取消订阅）。不重渲染列表，避免列表回到顶部。
+     */
+    _refreshSubscribeUI() {
+        if (typeof setupTopListDetailMenu === 'function') setupTopListDetailMenu();
     }
 };
 
@@ -1351,10 +1387,10 @@ function setupTopListDetailMenu() {
         </button>
         <div id="toplist-detail-menu"
             style="display: none; position: absolute; right: 0; top: calc(100% + 6px); min-width: 150px; background: var(--surface-color); border: 1px solid var(--divider-color); border-radius: 10px; box-shadow: var(--shadow-lg); z-index: 1002; padding: 6px 0; overflow: hidden;">
-            <button type="button" id="toplist-menu-manage" onclick="event.stopPropagation(); closeTopListDetailMenu(); toggleTopListManageMode();"
-                style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--text-color); font-size: 14px; cursor: pointer; text-align: left;">${toplistManageMode ? '完成管理' : '管理'}</button>
-            <button type="button" onclick="event.stopPropagation(); closeTopListDetailMenu(); TopListModule.subscribeCurrent();"
+            <button type="button" onclick="event.stopPropagation(); closeTopListDetailMenu(); TopListModule.toggleSubscribeCurrent();"
                 style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--text-color); font-size: 14px; cursor: pointer; text-align: left;">${TopListModule._detailSubscribed ? '取消订阅' : '订阅'}</button>
+            <button type="button" onclick="event.stopPropagation(); closeTopListDetailMenu(); toggleTopListManageMode();"
+                style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--text-color); font-size: 14px; cursor: pointer; text-align: left;">下载</button>
         </div>`;
     actions.appendChild(wrap);
 }
@@ -1365,16 +1401,9 @@ function removeTopListDetailMenu() {
     document.querySelectorAll('.toplist-detail-more').forEach((el) => el.remove());
 }
 
-/** 切换管理模式：出现勾选列，Hero 显示批量下载/完成 */
+/** 切换管理模式：出现勾选列，Hero 显示「下载(N) / 完成」（页头「⋯」→「下载」进入，Hero「完成」退出） */
 function toggleTopListManageMode() {
     toplistManageMode = !toplistManageMode;
-    // 同步页头菜单文字
-    const menu = document.getElementById('toplist-detail-menu');
-    if (menu) {
-        const btns = menu.querySelectorAll('button');
-        const manageBtn = btns[btns.length - 1];
-        if (manageBtn) manageBtn.textContent = toplistManageMode ? '完成管理' : '管理';
-    }
     TopListModule.renderDetailTable();
 }
 

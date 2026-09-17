@@ -1177,12 +1177,19 @@ const RecommendModule = {
             return;
         }
 
+        // 订阅前弹窗确认：订阅后该歌单会进入「下载订阅」，可手动或定时下载
+        const confirmed = await Notification.confirm(
+            `确定订阅歌单「${currentSheetTitle || window.currentSheetId}」吗？订阅后可在「下载订阅」页面手动或定时下载。`,
+            { title: '确认订阅', confirmText: '订阅', type: 'info' }
+        );
+        if (!confirmed) return;
+
         try {
             // 获取当前歌单的歌曲数量
             const songs = window.currentRecommendMusicList || [];
             const totalSongs = songs.length;
 
-            await subscribeToplist(
+            const subscribed = await subscribeToplist(
                 window.currentSheetId,
                 currentRecommendPlugin,
                 {
@@ -1193,11 +1200,40 @@ const RecommendModule = {
                 },
                 totalSongs
             );
+            // 失败（如已订阅）时 subscribeToplist 内部已提示，保持原按钮状态
+            if (!subscribed) return;
+            this._sheetSubscribed = true;
             showToast('已添加到订阅列表（启动）', 'success');
+            this._refreshSubscribeUI();
         } catch (error) {
             console.error('订阅失败:', error);
             showToast('订阅失败', 'error');
         }
+    },
+
+    /**
+     * 订阅 / 取消订阅当前歌单（按当前订阅状态自动切换，供详情页「订阅」按钮调用）
+     */
+    async toggleSubscribeCurrent() {
+        if (!currentRecommendPlugin || !window.currentSheetId) {
+            showToast('无法获取歌单信息', 'error');
+            return;
+        }
+        if (!this._sheetSubscribed) {
+            await this.subscribeCurrent();
+            return;
+        }
+        const unsubscribed = await unsubscribeToplist(window.currentSheetId, null, currentRecommendPlugin);
+        if (!unsubscribed) return; // 用户取消确认或取消订阅失败
+        this._sheetSubscribed = false;
+        this._refreshSubscribeUI();
+    },
+
+    /**
+     * 订阅状态变化后刷新页头「⋯」菜单（订阅 ↔ 取消订阅）。不重渲染列表，避免列表回到顶部。
+     */
+    _refreshSubscribeUI() {
+        if (typeof setupRecommendDetailMenu === 'function') setupRecommendDetailMenu();
     },
 
     /**
@@ -1405,10 +1441,11 @@ function setupRecommendDetailMenu() {
         </button>
         <div id="recommend-detail-menu"
             style="display: none; position: absolute; right: 0; top: calc(100% + 6px); min-width: 150px; background: var(--surface-color); border: 1px solid var(--divider-color); border-radius: 10px; box-shadow: var(--shadow-lg); z-index: 1002; padding: 6px 0; overflow: hidden;">
-            <button type="button" id="recommend-menu-manage" onclick="event.stopPropagation(); closeRecommendDetailMenu(); toggleSheetManageMode();"
-                style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--text-color); font-size: 14px; cursor: pointer; text-align: left;">${sheetManageMode ? '完成管理' : '管理'}</button>
-            <button type="button" onclick="event.stopPropagation(); closeRecommendDetailMenu(); RecommendModule.subscribeCurrent();"
+
+            <button type="button" onclick="event.stopPropagation(); closeRecommendDetailMenu(); RecommendModule.toggleSubscribeCurrent();"
                 style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--text-color); font-size: 14px; cursor: pointer; text-align: left;">${RecommendModule._sheetSubscribed ? '取消订阅' : '订阅'}</button>
+            <button type="button" onclick="event.stopPropagation(); closeRecommendDetailMenu(); toggleSheetManageMode();"
+                style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--text-color); font-size: 14px; cursor: pointer; text-align: left;">下载</button>
         </div>`;
     actions.appendChild(wrap);
 }
@@ -1425,14 +1462,9 @@ function setRecommendHeaderVisible(visible) {
     if (header) header.style.display = visible ? '' : 'none';
 }
 
-/** 切换管理模式：出现勾选列，Hero 显示批量下载/完成 */
+/** 切换管理模式：出现勾选列，Hero 显示「下载(N) / 完成」（页头「⋯」→「下载」进入，Hero「完成」退出） */
 function toggleSheetManageMode() {
     sheetManageMode = !sheetManageMode;
-    const menu = document.getElementById('recommend-detail-menu');
-    if (menu) {
-        const btns = menu.querySelectorAll('button');
-        if (btns[0]) btns[0].textContent = sheetManageMode ? '完成管理' : '管理';
-    }
     RecommendModule.renderSheetTable();
 }
 

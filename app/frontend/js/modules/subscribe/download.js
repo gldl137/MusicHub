@@ -58,6 +58,9 @@ function applyExcludeFilter(songs, subscription) {
     });
 }
 
+// 正在下载中的订阅（key = platform|toplistId）：防止重复点击同一订阅触发并发下载
+const downloadingSubscriptions = new Set();
+
 function startBatchDownload(songs, _subscription) {
     if (!window.DownloadCore) {
         showToast('下载组件未初始化', 'error');
@@ -258,6 +261,15 @@ async function runSubscriptionDownloadWithBtn(btn, platform, toplistId, _encoded
         btn.innerHTML = '<span>准备中...</span>';
     }
 
+    // 正在下载中的订阅（platform|toplistId）：下载期间列表会被轮询重渲染、按钮恢复可点，
+    // 这里做一次入口去重，避免重复点击触发并发下载
+    const subKey = `${platform}|${toplistId}`;
+    if (downloadingSubscriptions.has(subKey)) {
+        showToast('该订阅正在下载中，请等待完成', 'info');
+        return;
+    }
+    let entered = false;
+
     try {
         const token = Auth.getToken();
 
@@ -279,22 +291,35 @@ async function runSubscriptionDownloadWithBtn(btn, platform, toplistId, _encoded
             throw new Error('未找到订阅信息');
         }
 
-        // 2. 调用后端订阅下载接口（内部会回写 downloaded_count / total_songs 统计）
+        // 2. 调用后端订阅下载接口（内部会回写 downloaded_count / total_songs / last_run_at 统计）
         //    不传 force：已下载的歌曲会被识别为 alreadyDownloaded，秒级返回且不重复下载。
         if (btn) {
             btn.innerHTML = '<span>下载中...</span>';
         }
         showToast('正在下载订阅歌曲（后端执行）...', 'info');
 
-        const dlResponse = await fetch(`${API_BASE}/api/subscribed-toplists/${subscription.id}/download`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ force: false })
-        });
-        const dlResult = await dlResponse.json();
+        entered = true;
+        downloadingSubscriptions.add(subKey);
+
+        // 后端逐首下载期间轮询刷新订阅列表：卡片「下载 N/M」进度与「更新」时间实时变化
+        const progressTimer = setInterval(() => {
+            if (typeof window.loadSubscribedToplists === 'function') window.loadSubscribedToplists();
+        }, 3000);
+
+        let dlResult;
+        try {
+            const dlResponse = await fetch(`${API_BASE}/api/subscribed-toplists/${subscription.id}/download`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ force: false })
+            });
+            dlResult = await dlResponse.json();
+        } finally {
+            clearInterval(progressTimer);
+        }
         if (!dlResult.success) {
             throw new Error(dlResult.error || '下载失败');
         }
@@ -314,6 +339,7 @@ async function runSubscriptionDownloadWithBtn(btn, platform, toplistId, _encoded
         console.error('[subscribe/download] 下载失败:', error);
         showToast(`下载失败: ${error.message}`, 'error');
     } finally {
+        if (entered) downloadingSubscriptions.delete(subKey);
         if (btn) {
             btn.disabled = false;
             btn.innerHTML = `

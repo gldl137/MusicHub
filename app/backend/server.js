@@ -197,13 +197,6 @@ if (!fs.existsSync(PLUGINS_DIR)) {
   logger.info('SYSTEM', 'init', `Created plugins directory: ${PLUGINS_DIR}`);
 }
 
-// 确保播放列表目录存在
-const PLAYLISTS_DIR = path.join(__dirname, '..', 'playlists');
-if (!fs.existsSync(PLAYLISTS_DIR)) {
-  fs.mkdirSync(PLAYLISTS_DIR, { recursive: true });
-  logger.info('SYSTEM', 'init', `Created playlists directory: ${PLAYLISTS_DIR}`);
-}
-
 // 加载下载设置（从数据库覆盖默认值）
 function toExcludeArray(val) {
   if (Array.isArray(val)) return val.map(a => String(a).trim()).filter(Boolean);
@@ -268,7 +261,6 @@ ctx.setSingletons({
   DOWNLOAD_DIR,
   CONFIG_FILE,
   PLUGIN_CONFIG_FILE,
-  PLAYLISTS_DIR,
   CACHE_DIR,
   CACHE_INDEX_FILE,
   PLUGINS_DIR,
@@ -407,9 +399,7 @@ module.exports = {
   saveNotificationConfig: ctx.notifications.saveNotificationConfig,
   ResolverCore,
   downloadSubscriptionInternal: subscribeHelpers.downloadSubscriptionInternal,
-  syncSubscriptionInternal: subscribeHelpers.syncSubscriptionInternal,
-  generateAllM3UInternal: subscribeHelpers.generateAllM3UInternal,
-  generateM3UForSubscription: subscribeHelpers.generateM3UForSubscription
+  syncSubscriptionInternal: subscribeHelpers.syncSubscriptionInternal
 };
 
 // ==================== 启动服务器 ====================

@@ -146,7 +146,31 @@ function pruneProxySignCache(now = Date.now()) {
   }
 }
 
+/**
+ * 是否「同源 / 相对路径 / 内网地址」——这类地址不需要（也无法）走代理签名。
+ * 后端 /api/proxy/sign 带 SSRF 守卫：主机为私网网段（含 192.168.x、localhost 等）会直接
+ * 返回 403「目标地址不允许代理」。而 API_BASE = location.origin，前端拼出的同源绝对地址
+ * （如 http://<站点地址>/api/cover?id=xxx）正是私网地址，签名必然 403（日志刷屏）。
+ * @param {string} targetUrl
+ * @returns {boolean}
+ */
+function isSameOriginOrPrivateUrl(targetUrl) {
+  if (!targetUrl || typeof targetUrl !== 'string') return true;
+  try {
+    const u = new URL(targetUrl, window.location.origin);
+    if (u.origin === window.location.origin) return true;
+    const h = u.hostname;
+    return h === 'localhost' || h === '127.0.0.1' || h === '::1' || h === '[::1]'
+      || /^10\./.test(h) || /^192\.168\./.test(h) || /^172\.(1[6-9]|2\d|3[0-1])\./.test(h);
+  } catch {
+    return false;
+  }
+}
+
 async function signProxyUrl(targetUrl, type) {
+  // 同源 / 内网地址原样返回：交给浏览器同源请求，无需代理签名（否则必被后端 403 拒绝）
+  if (isSameOriginOrPrivateUrl(targetUrl)) return targetUrl;
+
   const base = (window.API_BASE) || '';
   const buildUrl = (token) => `${base}/api/proxy/${type}?token=${encodeURIComponent(token)}`;
 

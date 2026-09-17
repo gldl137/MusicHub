@@ -248,7 +248,7 @@ function switchLocalTab(tab) {
         if (!foldersTab.hasChildNodes()) {
             renderLocalFolderTree();
         }
-        // 页头菜单文字同步（退出管理模式后恢复「管理」）
+        // 重渲染页头「⋯」菜单（文件夹 tab 不显示「播放全部」项）
         setupLocalHeader(window.localSongsTotal || 0);
     } else {
         renderActiveLocalTab();
@@ -325,8 +325,10 @@ function setupLocalHeader(count) {
                 style="display: none; position: absolute; right: 0; top: calc(100% + 6px); min-width: 150px; background: var(--surface-color); border: 1px solid var(--divider-color); border-radius: 10px; box-shadow: var(--shadow-lg); z-index: 1001; padding: 6px 0; overflow: hidden;">
                 ${currentLocalTab === 'songs' ? `<button type="button" onclick="event.stopPropagation(); playAllLocal(); closeLocalHeaderMenu();"
                     style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--text-color); font-size: 14px; cursor: pointer; text-align: left;">播放全部</button>` : ''}
-                <button type="button" onclick="event.stopPropagation(); toggleLocalManageMode(); closeLocalHeaderMenu();"
-                    style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--danger-color, #ff4d4f); font-size: 14px; cursor: pointer; text-align: left;">${localManageMode ? '完成管理' : '管理'}</button>
+                <button type="button" onclick="event.stopPropagation(); openLocalManageMode(); closeLocalHeaderMenu();"
+                    style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--text-color); font-size: 14px; cursor: pointer; text-align: left;">歌单</button>
+                <button type="button" onclick="event.stopPropagation(); openLocalManageMode(); closeLocalHeaderMenu();"
+                    style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--danger-color, #ff4d4f); font-size: 14px; cursor: pointer; text-align: left;">删除</button>
             </div>
         </div>
     `;
@@ -376,7 +378,7 @@ function renderLocalSongs() {
                 <span style="font-size: 13px; color: var(--text-secondary);"><span style="margin-right: 8px;">💡</span>勾选歌曲后点右侧按钮</span>
             </div>
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-                <button class="btn btn-secondary btn-sm" onclick="localManageAdd()">添加到歌单${localSelectedCount() ? ` (${localSelectedCount()})` : ''}</button>
+                <button class="btn btn-secondary btn-sm" onclick="localManageAdd()">歌单${localSelectedCount() ? ` (${localSelectedCount()})` : ''}</button>
                 <button class="btn btn-danger btn-sm" onclick="deleteLocalSongs('local')">删除${localSelectedCount() ? ` (${localSelectedCount()})` : ''}</button>
                 <button class="btn btn-secondary btn-sm" onclick="toggleLocalManageMode()">完成</button>
             </div>
@@ -409,7 +411,7 @@ function renderLocalSongs() {
         },
         rowMenu: [
             { label: '收藏', onClick: (index) => toggleFavoriteLocal(index) },
-            { label: '添加到歌单', onClick: (index) => addLocalToPlaylistByIndex(index) },
+            { label: '歌单', onClick: (index) => addLocalToPlaylistByIndex(index) },
             { label: '删除', onClick: (index) => deleteLocalByIndex(index) }
         ],
         indexOffset: 0,
@@ -436,7 +438,7 @@ function localSelectedCount() {
     return (SongTable.getSelectedSongs('local') || []).length;
 }
 
-/** 切换管理模式（页头菜单「管理」/ 工具条「完成」）：按当前标签页重渲染对应视图 */
+/** 切换管理模式（页头菜单「添加到歌单 / 删除」/ 工具条「完成」）：按当前标签页重渲染对应视图 */
 function toggleLocalManageMode() {
     localManageMode = !localManageMode;
     localCardManageSel.clear();
@@ -452,6 +454,14 @@ function toggleLocalManageMode() {
     } else {
         renderLocalSongs();
     }
+}
+
+/**
+ * 进入管理模式（页头「⋯」菜单的 添加到歌单 / 删除 共用入口）。
+ * 模式内提供 添加到歌单(N) / 删除(N) / 完成；已在模式中则不重复切换。
+ */
+function openLocalManageMode() {
+    if (!localManageMode) toggleLocalManageMode();
 }
 
 // ==================== 歌手/专辑卡片管理模式 ====================
@@ -556,7 +566,7 @@ function localCardToolbarHtml() {
                 <span style="font-size: 13px; color: var(--text-secondary);"><span style="margin-right: 8px;">💡</span>勾选歌手/专辑后点右侧按钮</span>
             </div>
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-                <button class="btn btn-secondary btn-sm" onclick="localCardManageAdd()">添加到歌单${n ? ` (${n})` : ''}</button>
+                <button class="btn btn-secondary btn-sm" onclick="localCardManageAdd()">歌单${n ? ` (${n})` : ''}</button>
                 <button class="btn btn-danger btn-sm" onclick="localCardManageDelete()">删除${n ? ` (${n})` : ''}</button>
                 <button class="btn btn-secondary btn-sm" onclick="toggleLocalManageMode()">完成</button>
             </div>
@@ -740,6 +750,16 @@ function toggleLocalDetailManageMode(type) {
 }
 window.toggleLocalDetailManageMode = toggleLocalDetailManageMode;
 
+/**
+ * 进入详情页管理模式（页头「⋯」菜单的 添加到歌单 / 删除 共用入口）。
+ * 模式内提供 添加到歌单(N) / 删除(N) / 完成；已在模式中则不重复切换。
+ * @param {'artist'|'album'} type
+ */
+function openLocalDetailManageMode(type) {
+    if (!localDetailManageMode) toggleLocalDetailManageMode(type);
+}
+window.openLocalDetailManageMode = openLocalDetailManageMode;
+
 /** 顶部「⋯」管理菜单：展开/收起（同我的歌单详情页） */
 function toggleLocalDetailMenu(event) {
     if (event) event.stopPropagation();
@@ -805,8 +825,8 @@ async function renderLocalDetail(container, type, title, subtitle, songs) {
             </button>
             <div id="local-detail-menu"
                 style="display: none; position: absolute; right: 0; top: calc(100% + 6px); min-width: 150px; background: var(--surface-color); border: 1px solid var(--divider-color); border-radius: 10px; box-shadow: var(--shadow-lg); z-index: 1002; padding: 6px 0; overflow: hidden;">
-                <button type="button" onclick="event.stopPropagation(); closeLocalDetailMenu(); toggleLocalDetailManageMode('${type}');"
-                    style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--text-color); font-size: 14px; cursor: pointer; text-align: left;">${localDetailManageMode ? '完成管理' : '管理'}</button>
+                <button type="button" onclick="event.stopPropagation(); closeLocalDetailMenu(); openLocalDetailManageMode('${type}');"
+                    style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--danger-color, #ff4d4f); font-size: 14px; cursor: pointer; text-align: left;">删除</button>
             </div>`;
         headerActions.appendChild(wrap);
     }
@@ -881,13 +901,13 @@ async function renderLocalDetail(container, type, title, subtitle, songs) {
         },
         // 收藏已移出行菜单：作为独立心形按钮显示在「⋯」前（favorite 列，点击走 events.onFavorite）
         rowMenu: [
-            { label: '添加到歌单', onClick: (index) => addLocalDetailToPlaylist(type, index) },
+            { label: '歌单', onClick: (index) => addLocalDetailToPlaylist(type, index) },
             { label: '删除', onClick: (index) => deleteLocalSongs(pageId, index) }
         ],
         actions: localDetailManageMode ? [
             {
                 id: 'manage-add', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>',
-                text: `添加到歌单${selCount ? ` (${selCount})` : ''}`, primary: false, disabled: !songs.length, onClick: manageAddSelected
+                text: `歌单${selCount ? ` (${selCount})` : ''}`, primary: false, disabled: !songs.length, onClick: manageAddSelected
             },
             {
                 id: 'manage-delete', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>',
@@ -895,7 +915,10 @@ async function renderLocalDetail(container, type, title, subtitle, songs) {
             },
             { id: 'manage-done', icon: '', text: '完成', primary: true, onClick: () => toggleLocalDetailManageMode(type) }
         ] : [
-            { id: 'play', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>', text: '播放', primary: true, disabled: !songs.length, onClick: () => playLocalDetail(type, 0) }
+            { id: 'play', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>', text: '播放', primary: true, disabled: !songs.length, onClick: () => playLocalDetail(type, 0) },
+            // 「歌单」：与「删除」同款入口——先进多选模式（出现勾选框），勾选后点 Hero 里的「歌单(N)」加入歌单
+            // （未勾选直接点「歌单(N)」= 把该歌手/专辑全部歌曲加入歌单）
+            { id: 'add-entry', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>', text: '歌单', primary: false, disabled: !songs.length, onClick: () => openLocalDetailManageMode(type) }
         ],
         events: {
             onPlay: (song, index) => playLocalDetail(type, index),
@@ -1224,7 +1247,7 @@ function renderLocalFolderMain() {
                 <span style="font-size: 13px; color: var(--text-secondary);"><span style="margin-right: 8px;">💡</span>勾选歌曲后点右侧按钮</span>
             </div>
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-                <button class="btn btn-secondary btn-sm" onclick="localFolderManageAdd()">添加到歌单${localFolderSelectedCount() ? ` (${localFolderSelectedCount()})` : ''}</button>
+                <button class="btn btn-secondary btn-sm" onclick="localFolderManageAdd()">歌单${localFolderSelectedCount() ? ` (${localFolderSelectedCount()})` : ''}</button>
                 <button class="btn btn-danger btn-sm" onclick="deleteLocalSongs('local-folder')">删除${localFolderSelectedCount() ? ` (${localFolderSelectedCount()})` : ''}</button>
                 <button class="btn btn-secondary btn-sm" onclick="toggleLocalManageMode()">完成</button>
             </div>
@@ -1265,7 +1288,7 @@ function renderLocalFolderMain() {
         },
         rowMenu: [
             { label: '收藏', onClick: (index) => toggleLocalFolderFavorite(start + index) },
-            { label: '添加到歌单', onClick: (index) => addLocalFolderToPlaylistByIndex(start + index) },
+            { label: '歌单', onClick: (index) => addLocalFolderToPlaylistByIndex(start + index) },
             { label: '删除', onClick: (index) => deleteLocalSongs('local-folder', start + index) }
         ],
         indexOffset: start,

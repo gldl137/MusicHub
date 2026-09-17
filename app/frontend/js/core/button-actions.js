@@ -57,12 +57,12 @@ const ButtonActions = {
      * @param {Object} options - 配置选项
      * @param {Function} options.onClick - 点击回调
      * @param {boolean} options.disabled - 是否禁用
-     * @param {string} options.text - 按钮文字，默认'添加'
+     * @param {string} options.text - 按钮文字，默认'歌单'
      * @param {boolean} options.primary - 是否主按钮样式，默认false
      * @returns {Object} 按钮配置对象
      */
     createAddButton(options = {}) {
-        const { onClick, disabled = false, text = '添加', primary = false } = options;
+        const { onClick, disabled = false, text = '歌单', primary = false } = options;
         return {
             id: 'add',
             icon: this.icons.add,
@@ -232,12 +232,12 @@ const ButtonActions = {
      * @param {Array} options.songs - 当前页面的全部歌曲列表
      * @param {string} options.sourceName - 来源名称，用于弹窗显示
      * @param {boolean} options.disabled - 是否禁用
-     * @param {string} options.text - 按钮文字，默认'添加'
+     * @param {string} options.text - 按钮文字，默认'歌单'
      * @param {boolean} options.primary - 是否主按钮样式，默认false
      * @returns {Object} 按钮配置对象
      */
     createAddButtonWithUnifiedLogic(options = {}) {
-        const { pageId, songs, sourceName, cover, disabled = false, text = '添加', primary = false } = options;
+        const { pageId, songs, sourceName, cover, disabled = false, text = '歌单', primary = false } = options;
         return {
             id: 'add',
             icon: this.icons.add,

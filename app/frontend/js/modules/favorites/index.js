@@ -146,7 +146,7 @@ function renderFavorites(songs, container) {
     // 与「我的歌单」一致：普通模式无工具条（播放/管理在页头「⋯」菜单），管理模式才出现操作条
     const manageBtns = favoritesManageMode ? `
                 <button class="btn btn-secondary btn-sm" id="favorites-selectall-btn" onclick="toggleSelectAllFavoriteCards()">${n && n === pageSongs.length ? '取消全选' : '全选'}</button>
-                <button class="btn btn-secondary btn-sm" id="favorites-add-btn" onclick="addSelectedFavoritesToPlaylist()">添加${n ? ` (${n})` : ''}</button>
+                <button class="btn btn-secondary btn-sm" id="favorites-add-btn" onclick="addSelectedFavoritesToPlaylist()">歌单${n ? ` (${n})` : ''}</button>
                 <button class="btn btn-secondary btn-sm" id="favorites-download-btn" onclick="downloadSelectedFavorites()">下载${n ? ` (${n})` : ''}</button>
                 <button class="btn btn-danger btn-sm" id="favorites-clear-btn" onclick="clearSelectedFavorites()"
                     ${n ? '' : 'disabled'} style="${n ? '' : 'opacity:.5; cursor:not-allowed;'}">删除${n ? ` (${n})` : ''}</button>
@@ -185,7 +185,8 @@ function renderFavorites(songs, container) {
 }
 
 /**
- * 页头「⋯」菜单（与我的歌单一致）：播放全部 / 管理；标题带计数
+ * 页头「⋯」菜单（与「我的歌单」一致）：播放全部 / 添加到歌单 / 下载 / 删除
+ * （后三者都进入同一个多选模式——一个功能一个入口，模式内提供 全选/添加/下载/删除/完成）
  */
 function setupFavoritesHeader(count) {
     const headerLeft = document.getElementById('header-left');
@@ -212,8 +213,12 @@ function setupFavoritesHeader(count) {
                 style="display: none; position: absolute; right: 0; top: calc(100% + 6px); min-width: 150px; background: var(--surface-color); border: 1px solid var(--divider-color); border-radius: 10px; box-shadow: var(--shadow-lg); z-index: 1001; padding: 6px 0; overflow: hidden;">
                 <button type="button" onclick="event.stopPropagation(); playAllFavorites(); closeFavoritesMenu();"
                     style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--text-color); font-size: 14px; cursor: pointer; text-align: left;">播放全部</button>
-                <button type="button" id="favorites-menu-manage" onclick="event.stopPropagation(); toggleFavoritesManageMode(); closeFavoritesMenu();"
-                    style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--danger-color, #ff4d4f); font-size: 14px; cursor: pointer; text-align: left;">${favoritesManageMode ? '完成删除' : '管理'}</button>
+                <button type="button" onclick="event.stopPropagation(); openFavoritesManageMode(); closeFavoritesMenu();"
+                    style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--text-color); font-size: 14px; cursor: pointer; text-align: left;">歌单</button>
+                <button type="button" onclick="event.stopPropagation(); openFavoritesManageMode(); closeFavoritesMenu();"
+                    style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--text-color); font-size: 14px; cursor: pointer; text-align: left;">下载</button>
+                <button type="button" onclick="event.stopPropagation(); openFavoritesManageMode(); closeFavoritesMenu();"
+                    style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--danger-color, #ff4d4f); font-size: 14px; cursor: pointer; text-align: left;">删除</button>
             </div>
         </div>
     `;
@@ -368,6 +373,14 @@ function toggleFavoritesManageMode() {
 }
 
 /**
+ * 进入管理模式（页头「⋯」菜单的 添加到歌单 / 下载 / 删除 共用入口）。
+ * 模式内提供 全选 / 添加(N) / 下载(N) / 删除(N) / 完成；已在模式中则不重复切换。
+ */
+function openFavoritesManageMode() {
+    if (!favoritesManageMode) toggleFavoritesManageMode();
+}
+
+/**
  * 点击卡片切换勾选（管理模式）
  */
 function toggleFavoriteCardSelect(index) {
@@ -411,7 +424,7 @@ function syncFavoritesSelectionUI() {
     }
     const n = favoritesSelected.size;
     const addBtn = document.getElementById('favorites-add-btn');
-    if (addBtn) addBtn.textContent = n ? `添加 (${n})` : '添加';
+    if (addBtn) addBtn.textContent = n ? `歌单 (${n})` : '歌单';
     const dlBtn = document.getElementById('favorites-download-btn');
     if (dlBtn) dlBtn.textContent = n ? `下载 (${n})` : '下载';
     const clrBtn = document.getElementById('favorites-clear-btn');

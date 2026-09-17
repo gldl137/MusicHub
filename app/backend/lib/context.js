@@ -281,7 +281,6 @@ module.exports = {
   get DOWNLOAD_DIR() { return singletons.DOWNLOAD_DIR; },
   get CONFIG_FILE() { return singletons.CONFIG_FILE; },
   get PLUGIN_CONFIG_FILE() { return singletons.PLUGIN_CONFIG_FILE; },
-  get PLAYLISTS_DIR() { return singletons.PLAYLISTS_DIR; },
   get CACHE_DIR() { return singletons.CACHE_DIR; },
   get CACHE_INDEX_FILE() { return singletons.CACHE_INDEX_FILE; },
   get PLUGINS_DIR() { return singletons.PLUGINS_DIR; },

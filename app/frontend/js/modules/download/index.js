@@ -847,6 +847,25 @@ async function refreshDownloadLists(_immediate = false) {
                 };
             });
 
+            // ⚠️ 顺序很重要：必须先渲染「下载中」，再渲染「已下载」。
+            // 「已下载」要逐条 HEAD 校验文件是否存在（网络 IO，见 renderDownloadedSongs → markFileStatus），
+            // 一旦某次请求长时间不返回，后面的代码就永远轮不到执行——「下载中」会一直停在初始 loading
+            // 转圈（订阅批量下载的任务就是这样看不到的）。
+            if (downloadingList) {
+                if (activeDownloads.length > 0) {
+                    renderDownloadItems(activeDownloads, downloadingList);
+                } else {
+                    downloadingList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">⏳</div>
+                            <div class="empty-text">暂无下载任务</div>
+                            <div class="empty-subtext">当前没有正在下载的歌曲</div>
+                        </div>
+                    `;
+                    updatePauseAllButton([]);
+                }
+            }
+
             if (downloadedList) {
                 // 指纹去重：已完成列表内容无变化时跳过重渲染（5s 定时刷新不再反复重建表格）
                 const completedFp = completedDownloads.map(item => `${item.id}:${item.status}`).join('|');
@@ -864,21 +883,6 @@ async function refreshDownloadLists(_immediate = false) {
                             <div class="empty-subtext">您下载的歌曲将显示在这里</div>
                         </div>
                     `;
-                }
-            }
-
-            if (downloadingList) {
-                if (activeDownloads.length > 0) {
-                    renderDownloadItems(activeDownloads, downloadingList);
-                } else {
-                    downloadingList.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-icon">⏳</div>
-                            <div class="empty-text">暂无下载任务</div>
-                            <div class="empty-subtext">当前没有正在下载的歌曲</div>
-                        </div>
-                    `;
-                    updatePauseAllButton([]);
                 }
             }
         } else {
@@ -923,12 +927,19 @@ async function refreshDownloadLists(_immediate = false) {
  */
 async function checkDownloadFileExists(filePath) {
     if (!filePath) return false;
+    let timer = null;
     try {
         const fullUrl = filePath.startsWith('http') ? filePath : `${API_BASE}${filePath}`;
-        const response = await fetch(fullUrl, { method: 'HEAD' });
+        // 必须带超时：本函数在「已下载」渲染里逐条串行调用，某次请求悬挂会拖死整轮刷新
+        // （「下载中」列表会因此一直转圈）
+        const controller = new AbortController();
+        timer = setTimeout(() => controller.abort(), 5000);
+        const response = await fetch(fullUrl, { method: 'HEAD', signal: controller.signal });
         return response.ok;
     } catch (error) {
         return false;
+    } finally {
+        if (timer) clearTimeout(timer);
     }
 }
 
@@ -1011,7 +1022,7 @@ async function renderDownloadedSongs(songs, container) {
                     <span style="font-size: 13px; color: var(--text-secondary);"><span style="margin-right: 8px;">💡</span>勾选歌曲后点右侧按钮</span>
                 </div>
                 <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-                    <button class="btn btn-secondary btn-sm" onclick="downloadManageAdd()">添加到歌单${n ? ` (${n})` : ''}</button>
+                    <button class="btn btn-secondary btn-sm" onclick="downloadManageAdd()">歌单${n ? ` (${n})` : ''}</button>
                     <button class="btn btn-danger btn-sm" onclick="downloadManageClear()">清空记录${n ? ` (${n})` : ''}</button>
                     <button class="btn btn-secondary btn-sm" onclick="toggleDownloadManageMode()">完成</button>
                 </div>
@@ -1355,7 +1366,9 @@ function renderDownloadItems(downloads, container) {
             album: `${statusText}${item.status === 'downloading' ? ` · ${progress}%` : ''}`
         };
     });
-    SongTable.render({
+    // SongTable.render 是 async 且此处不 await：必须挂上 catch，否则渲染异常会变成
+    // 「未捕获的 promise rejection」——列表会永远停在 loading 转圈，既不报错也看不到原因
+    const rendering = SongTable.render({
         container,
         pageId: 'download-progress',
         title: '',
@@ -1383,6 +1396,18 @@ function renderDownloadItems(downloads, container) {
         actions: [],
         events: {}
     });
+    if (rendering && typeof rendering.catch === 'function') {
+        rendering.catch((err) => {
+            console.error('[download] 渲染「下载中」列表失败:', err);
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">❌</div>
+                    <div class="empty-text">任务列表渲染失败</div>
+                    <div class="empty-subtext">${escapeHtml((err && err.message) || '未知错误')}</div>
+                </div>
+            `;
+        });
+    }
     updatePauseAllButton(downloads);
 }
 
@@ -1444,6 +1469,12 @@ function switchDownloadTab(tab) {
     document.querySelectorAll('.downloads-content .tab-content').forEach(content => {
         content.classList.toggle('active', content.id === `${tab}-tab`);
     });
+
+    // 切到「下载中」立刻刷新一次：定时刷新里「已下载」要逐条 HEAD 校验文件，可能较慢，
+    // 用户点进来时先拿到一次最新任务列表，不等后续慢操作
+    if (tab === 'downloading') {
+        refreshDownloadLists(true);
+    }
 
     // 切换标签页时退出管理模式
     if (tab !== 'downloaded' && downloadManageMode) {

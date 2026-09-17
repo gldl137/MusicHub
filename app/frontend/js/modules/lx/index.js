@@ -233,11 +233,9 @@ function lxRefreshDetail() {
     lxRenderDetailTable(lxDetailCtx);
 }
 
-/** 切换管理模式：出现勾选列，Hero 显示「下载(N)/完成」（与 MF 一致） */
+/** 切换管理模式：出现勾选列，Hero 显示「下载(N)/完成」（页头「⋯」→「下载」进入，Hero「完成」退出） */
 function lxToggleManageMode() {
     lxManageMode = !lxManageMode;
-    const btn = document.querySelector('#lx-detail-menu button[data-role="manage"]');
-    if (btn) btn.textContent = lxManageMode ? '完成管理' : '管理';
     lxRefreshDetail();
 }
 
@@ -277,8 +275,8 @@ function lxSetupDetailMenu() {
         </button>
         <div id="lx-detail-menu"
             style="display: none; position: absolute; right: 0; top: calc(100% + 6px); min-width: 150px; background: var(--surface-color); border: 1px solid var(--divider-color); border-radius: 10px; box-shadow: var(--shadow-lg); z-index: 1002; padding: 6px 0; overflow: hidden;">
-            <button type="button" data-role="manage" onclick="event.stopPropagation(); lxCloseDetailMenu(); lxToggleManageMode();"
-                style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--text-color); font-size: 14px; cursor: pointer; text-align: left;">${lxManageMode ? '完成管理' : '管理'}</button>
+            <button type="button" onclick="event.stopPropagation(); lxCloseDetailMenu(); lxToggleManageMode();"
+                style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--text-color); font-size: 14px; cursor: pointer; text-align: left;">下载</button>
         </div>`;
     actions.appendChild(wrap);
 }

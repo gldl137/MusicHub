@@ -277,7 +277,7 @@ const RadioModule = {
         const available = this.dimensionOrder.filter((d) => this.dimensions[d] && this.dimensions[d].length && this.tabCount(d) > 0);
         const extra = Object.keys(this.dimensions).filter((d) => !this.dimensionOrder.includes(d) && this.dimensions[d] && this.dimensions[d].length && this.tabCount(d) > 0);
         const all = available.concat(extra);
-        // 右侧仅保留「⚙ 管理」按钮，点击展开菜单：新增 / 导出 / 导入 / 管理（管理=切换当前列表管理模式）
+        // 右侧仅保留「⚙ 管理」按钮，点击展开菜单：新增 / 导出 / 导入 / 删除（删除=进入当前列表多选删除模式）
         const managing = this.manageMode && !this.myRadioMode;
         const addBtn = `
             <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
@@ -311,7 +311,7 @@ const RadioModule = {
     },
 
     /**
-     * 顶部「⚙ 管理」按钮：展开电台管理菜单（含 新增 / 导出 / 导入 / 管理）。
+     * 顶部「⚙ 管理」按钮：展开电台管理菜单（含 新增 / 导出 / 导入 / 删除）。
      */
     toggleRadioManageMenu(event) {
         if (event) { event.stopPropagation(); event.preventDefault(); }
@@ -334,7 +334,7 @@ const RadioModule = {
                 { label: '新增', fn: () => this.showAddStationModal() },
                 { label: '导出', fn: () => this.exportStations() },
                 { label: '导入', fn: () => this.importStations() },
-                { label: '管理', fn: () => this.toggleStationManageMode(), active: () => this.isStationManage() }
+                { label: '删除', fn: () => this.openStationManage(), active: () => this.isStationManage() }
             ];
             this._manageMenuItems = items;
             menu.addEventListener('click', (e) => {
@@ -398,6 +398,14 @@ const RadioModule = {
         } else {
             this.renderCategoryCards();
         }
+    },
+
+    /**
+     * 进入【当前电台列表】管理模式（顶部「⚙」菜单的「删除」入口）。
+     * 模式内提供 全选 / 删除(N) / 完成（退出用工具条「完成」）；已在模式中则不重复切换。
+     */
+    openStationManage() {
+        if (!this.manageMode) this.toggleStationManageMode();
     },
 
     /**
@@ -516,6 +524,14 @@ const RadioModule = {
         this.favDragIndex = null;
         this.favSelected.clear();
         this.renderFavorites();
+    },
+
+    /**
+     * 进入「我的电台」管理模式（页头「⋯」菜单的「删除」入口）。
+     * 模式内提供 全选 / 删除(N) / 完成；已在模式中则不重复切换。
+     */
+    openFavManageMode() {
+        if (!this.manageMode) this.toggleManageMode();
     },
 
     /**
@@ -1503,8 +1519,8 @@ const RadioModule = {
                     style="display: none; position: absolute; right: 0; top: calc(100% + 6px); min-width: 150px; background: var(--surface-color); border: 1px solid var(--divider-color); border-radius: 10px; box-shadow: var(--shadow-lg); z-index: 1001; padding: 6px 0; overflow: hidden;">
                     <button type="button" onclick="event.stopPropagation(); RadioModule.playAllFavorites(); RadioModule.closeFavMenu();"
                         style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--text-color); font-size: 14px; cursor: pointer; text-align: left;">播放全部</button>
-                    <button type="button" onclick="event.stopPropagation(); RadioModule.toggleManageMode(); RadioModule.closeFavMenu();"
-                        style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--danger-color, #ff4d4f); font-size: 14px; cursor: pointer; text-align: left;">${this.manageMode ? '完成删除' : '管理'}</button>
+                    <button type="button" onclick="event.stopPropagation(); RadioModule.openFavManageMode(); RadioModule.closeFavMenu();"
+                        style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--danger-color, #ff4d4f); font-size: 14px; cursor: pointer; text-align: left;">删除</button>
                 </div>
             </div>
         `;

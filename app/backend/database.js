@@ -5304,7 +5304,7 @@ function updateSubscribedToplistConfig(userId, platform, toplistId, config) {
 /**
  * 按订阅主键 id 直接更新下载统计（更可靠，不依赖 platform/toplist_id 匹配）
  * @param {number} subscriptionId
- * @param {Object} stats { downloadedCount, totalSongs, failedCount }
+ * @param {Object} stats { downloadedCount, totalSongs, failedCount, lastRunAt }
  * @param {number} [userId] - 可选，用于刷新该用户的订阅列表缓存
  */
 function updateSubscribedToplistStats(subscriptionId, stats = {}, userId) {
@@ -5322,6 +5322,11 @@ function updateSubscribedToplistStats(subscriptionId, stats = {}, userId) {
     if (stats.failedCount !== undefined) {
       fields.push('failed_count = ?');
       values.push(stats.failedCount);
+    }
+    // 下载也是一次「运行」：写完 last_run_at，前端卡片「更新」不再显示「从未运行」
+    if (stats.lastRunAt !== undefined) {
+      fields.push('last_run_at = ?');
+      values.push(stats.lastRunAt);
     }
     if (fields.length === 0) {
       return resolve({ updated: 0 });

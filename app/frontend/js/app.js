@@ -510,6 +510,17 @@ async function switchPage(page, skipLoad = false) {
         window.resetPlaylistDetailManageMode();
     }
 
+    // 清理上一个详情页残留在页头的「⋯」控件：
+    // 排行榜/热门歌单/LX/我的歌单/本地详情的「⋯」都挂在全局 #header-actions 上，
+    // 若不清掉，切页面（如 排行榜详情 → 我的歌单）会与新页面的「⋯」叠加成两个。
+    if (typeof removeTopListDetailMenu === 'function') removeTopListDetailMenu();
+    if (typeof removeRecommendDetailMenu === 'function') removeRecommendDetailMenu();
+    if (typeof lxRemoveDetailMenu === 'function') lxRemoveDetailMenu();
+    if (typeof closePlaylistDetailMenu === 'function') closePlaylistDetailMenu();
+    if (typeof closeLocalDetailMenu === 'function') closeLocalDetailMenu();
+    document.querySelectorAll('#header-actions .playlist-detail-more, #header-actions .local-detail-more')
+        .forEach((el) => el.remove());
+
     // 清除歌单详情染色（页头跟随染色用的变量，避免污染其他页面）
     document.documentElement.style.removeProperty('--header-bg');
 
@@ -799,6 +810,16 @@ async function playMusic(index) {
     if (!playlist || !playlist[index]) {
         showToast('无法播放：歌曲不存在', 'error');
         return;
+    }
+
+    // 随机开关只在「随机」按钮播放时打开：只有 enableShuffleMode（随机按钮）与播放器自身的
+    // 上一首/下一首切换会置位 __keepShuffleForNextPlay；其余入口（点击歌曲 / 播放按钮 /
+    // 悬浮播放 / 播放选中）一律回到顺序播放，并把播放器上的随机开关同步熄灭，
+    // 避免之前点过「随机」后的状态一直粘着影响后续播放。
+    if (window.__keepShuffleForNextPlay) {
+        window.__keepShuffleForNextPlay = false;
+    } else if (typeof disableShuffleMode === 'function') {
+        disableShuffleMode();
     }
 
     // 记录前台日志 - 播放歌曲
@@ -1133,12 +1154,14 @@ function getSourceTypeLine(music) {
 
 /**
  * 播放器来源「第二行」：实际来源名，统一为「音源别名-插件名」。
- *   本地 / STRM → STRM；电台 → 留空（第一行已标「电台」）
+ *   只有真正的 strm 文本直链 → STRM；其余本地文件（普通音频、已下载到本地的歌曲）→ 留空
+ *   （第一行已标「本地」；非 strm 文件并不是 strm 格式，标 STRM 属于误标）；电台 → 留空
  */
 function getSourceNameLine(music) {
     if (!music) return '';
     if (isStrmSong(music)) return 'STRM';
-    if (music.platform === 'local' || music.plugin === 'local' || !!music.filePath || music.isLocalMatch) return 'STRM';
+    // 普通本地 / 已下载文件：第二行留空（此前这里也返回 STRM，本地 m4a/mp3 被误标成 strm）
+    if (music.platform === 'local' || music.plugin === 'local' || !!music.filePath || music.isLocalMatch) return '';
     if (music.isLive || music.plugin === 'radio' || music.platform === 'radio') return ''; // 电台第二行留空
     if (typeof isLxPlugin === 'function' && isLxPlugin(music.plugin || music.platform)) {
         return getMusicSourceLabel(music);
@@ -1418,6 +1441,9 @@ function toggleShuffleMode() {
  * 同步播放器/播放详情页的随机按钮高亮状态（已开启则静默跳过）
  */
 function enableShuffleMode() {
+    // 标记「本次播放由随机按钮发起」：playMusic 消费该标记后保持随机模式；
+    // 其余播放入口（点歌 / 播放按钮 / 悬浮播放 / 播放选中）不带此标记，会被 playMusic 归位为顺序播放
+    window.__keepShuffleForNextPlay = true;
     if (window.isShuffleMode) return;
     window.isShuffleMode = true;
     window.shuffleMode = true;

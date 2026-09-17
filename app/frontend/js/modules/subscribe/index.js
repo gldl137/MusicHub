@@ -485,6 +485,7 @@ function viewSubscriptionDetail(platform, toplistId, title, sourceType) {
  * @param {string} pluginName
  * @param {Object} extraData - 额外数据如标题、封面等
  * @param {number} totalSongs - 歌曲总数
+ * @returns {Promise<boolean>} 是否订阅成功（失败/已订阅时为 false，函数内部已提示）
  */
 async function subscribeToplist(toplistId, pluginName, extraData = {}, totalSongs = 0) {
     try {
@@ -521,12 +522,15 @@ async function subscribeToplist(toplistId, pluginName, extraData = {}, totalSong
                     runSubscriptionSync(pluginName, toplistId, encodeURIComponent(extraData.title || ''));
                 }, 500);
             }
+            return true;
         } else {
             showToast('订阅失败: ' + (result.error || '未知错误'), 'error');
+            return false;
         }
     } catch (error) {
         console.error('订阅榜单失败:', error);
         showToast('订阅失败: ' + error.message, 'error');
+        return false;
     }
 }
 
@@ -535,6 +539,7 @@ async function subscribeToplist(toplistId, pluginName, extraData = {}, totalSong
  * @param {string} toplistId
  * @param {Event} event
  * @param {string} pluginName
+ * @returns {Promise<boolean>} 是否已取消订阅（用户取消确认 / 失败时为 false）
  */
 async function unsubscribeToplist(toplistId, event, pluginName) {
     const reqId = Math.random().toString(36).substring(2, 10);
@@ -549,7 +554,7 @@ async function unsubscribeToplist(toplistId, event, pluginName) {
     const confirmed = await Notification.confirm('确定要取消订阅这个榜单吗？', { type: 'warning' });
     if (!confirmed) {
         console.log(`[INFO ][UNSUBSCRIBE][${reqId}] CANCEL | 用户取消操作`);
-        return;
+        return false;
     }
 
     try {
@@ -568,13 +573,16 @@ async function unsubscribeToplist(toplistId, event, pluginName) {
             console.log(`[INFO ][UNSUBSCRIBE][${reqId}] SUCCESS | 取消订阅成功 | platform=${platform}, toplistId=${toplistId}`);
             showToast('已取消订阅', 'success');
             loadSubscribedToplists();
+            return true;
         } else {
             console.error(`[ERROR][UNSUBSCRIBE][${reqId}] FAILED | 取消订阅失败 | ${result.error || '未知错误'}`);
             showToast('取消订阅失败: ' + (result.error || '未知错误'), 'error');
+            return false;
         }
     } catch (error) {
         console.error(`[ERROR][UNSUBSCRIBE][${reqId}] ERROR | 取消订阅异常 | ${error.message}`);
         showToast('取消订阅失败: ' + error.message, 'error');
+        return false;
     }
 }
 

@@ -151,6 +151,13 @@ const PlayerModule = {
             return url;
         }
 
+        // 同源 / 相对路径（已下载到本地的文件、后端接口地址）不需要代理，直接返回：
+        // 既避免 new URL(相对地址) 抛错刷「Failed to sign audio URL」告警，
+        // 也避免把内网同源绝对地址送去 /api/proxy/sign 被 SSRF 守卫 403 拒绝
+        if (/^\//.test(url) || url.startsWith(window.location.origin)) {
+            return url;
+        }
+
         try {
             const urlObj = new URL(url);
             const setHeaders = urlObj.searchParams.get('_setHeaders');
@@ -1236,6 +1243,8 @@ const PlayerModule = {
         } else {
             newIndex = (window.currentIndex - 1 + window.currentPlaylist.length) % window.currentPlaylist.length;
         }
+        // 播放器内部切歌：保留当前随机模式（否则会被 playMusic 的顺序化逻辑顺手关掉）
+        window.__keepShuffleForNextPlay = true;
         await playMusic(newIndex);
     },
 
@@ -1696,6 +1705,8 @@ const PlayerModule = {
         } else {
             newIndex = (window.currentIndex + 1) % window.currentPlaylist.length;
         }
+        // 播放器内部切歌：保留当前随机模式（否则会被 playMusic 的顺序化逻辑顺手关掉）
+        window.__keepShuffleForNextPlay = true;
         await playMusic(newIndex);
     },
 
@@ -2062,8 +2073,9 @@ const PlayerModule = {
                 if (window.currentIndex >= window.currentPlaylist.length) {
                     window.currentIndex = window.currentPlaylist.length - 1;
                 }
-                // 播放下一首
+                // 播放下一首（播放器内部接续：保留当前随机模式）
                 if (typeof playMusic === 'function') {
+                    window.__keepShuffleForNextPlay = true;
                     playMusic(window.currentIndex);
                 }
             } else {

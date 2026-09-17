@@ -1,15 +1,15 @@
 'use strict';
 
 // ==================== 订阅/榜单 复用内部函数 ====================
-// 抽离自 server.js，供 routes/subscribe.js 与各调度器（subscription-scheduler /
-// m3u-generator-scheduler）复用。单例通过 ctx 延迟访问。
+// 抽离自 server.js，供 routes/subscribe.js 与订阅调度器（scheduler/subscription-scheduler.js）复用。
+// 单例通过 ctx 延迟访问。
 
 const ctx = require('./context');
 const { logger, runPlugin } = ctx;
 const database = ctx.database;
 const { db } = database;
 const {
-  updateSubscribedToplistStats, saveSubscribedToplistSongs,
+  updateSubscribedToplistStats, updateSubscribedToplistConfig, saveSubscribedToplistSongs,
   addDownload, updateDownloadStatus, getDownload, getSetting, getSubscribedToplistSongs
 } = database;
 
@@ -107,23 +107,42 @@ async function downloadSubscriptionInternal(subscription, options = {}) {
   );
 
   const excludeEnabled = subscription.exclude_enabled !== 0;
-  const result = await downloadService.downloadSubscription(subscription, {
-    ...options,
-    excludeArtists: excludeEnabled ? (ctx.downloadSettings.excludeArtists || []) : [],
-    excludeLanguages: excludeEnabled ? (ctx.downloadSettings.excludeLanguages || []) : []
-  });
 
-  // 回写下载统计到订阅表，使前端卡片能反映已下载进度（按主键 id 更新，更可靠）
-  try {
+  // 统计回写（按主键 id 更新，更可靠）：每完成一首调用一次，前端卡片进度实时增长；
+  // 同时写 last_run_at —— 下载也算一次运行，否则卡片「更新」永远显示「从未运行」。
+  const writeStats = async (snapshot) => {
     await updateSubscribedToplistStats(
       subscription.id,
       {
-        downloadedCount: result.alreadyDownloaded + result.downloaded,
-        totalSongs: result.totalSongs || subscription.total_songs || 0,
-        failedCount: result.failed
+        downloadedCount: snapshot.downloaded,
+        totalSongs: snapshot.totalSongs || subscription.total_songs || 0,
+        failedCount: snapshot.failed,
+        lastRunAt: Date.now()
       },
       subscription.user_id
     );
+  };
+
+  const result = await downloadService.downloadSubscription(subscription, {
+    ...options,
+    excludeArtists: excludeEnabled ? (ctx.downloadSettings.excludeArtists || []) : [],
+    excludeLanguages: excludeEnabled ? (ctx.downloadSettings.excludeLanguages || []) : [],
+    onSongComplete: async (snapshot) => {
+      try {
+        await writeStats(snapshot);
+      } catch (e) {
+        logger.warn('subscribe-helpers', 'downloadSubscription', '更新订阅下载统计失败', { error: e.message, subscriptionId: subscription.id });
+      }
+    }
+  });
+
+  // 收尾：写最终统计（「本次 0 首可下」也要刷新 last_run_at）
+  try {
+    await writeStats({
+      downloaded: result.alreadyDownloaded + result.downloaded,
+      totalSongs: result.totalSongs,
+      failed: result.failed
+    });
   } catch (e) {
     logger.warn('subscribe-helpers', 'downloadSubscription', '更新订阅下载统计失败', { error: e.message, subscriptionId: subscription.id });
   }

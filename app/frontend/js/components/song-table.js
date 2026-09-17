@@ -75,7 +75,7 @@ const SongTable = {
                 title = '',
                 subtitle = '',
                 actions = [],
-                columns = ['checkbox', 'favorite', 'download', 'index', 'title', 'artist', 'album', 'duration', 'source'],
+                columns: columnsConfig = ['checkbox', 'favorite', 'download', 'index', 'title', 'artist', 'album', 'duration', 'source'],
                 events = {},
                 showHeader = true,
                 onBack = null,
@@ -86,6 +86,12 @@ const SongTable = {
                 titleCover = null,
                 showLocalBadge = true
             } = config;
+
+        // 注意：这里必须是 let。传了 rowMenu 时下面会自动补一列 more（columns = columns.concat(...)），
+        // 若写成 const 会在赋值处抛 TypeError: Assignment to constant variable；又因为 render 是 async
+        // 而调用方通常不 await，异常会变成「未捕获的 promise rejection」，调用方的容器会一直停在
+        // loading 转圈（下载管理「下载中」列表就是这样整块渲染不出来的）。
+        let columns = columnsConfig;
 
         if (!container) {
             console.error('SongTable: container is required');

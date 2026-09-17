@@ -427,8 +427,8 @@ async function loadMyPlaylists() {
                             style="display: none; position: absolute; right: 0; top: calc(100% + 6px); min-width: 150px; background: var(--surface-color); border: 1px solid var(--divider-color); border-radius: 10px; box-shadow: var(--shadow-lg); z-index: 1001; padding: 6px 0; overflow: hidden;">
                             <button type="button" onclick="event.stopPropagation(); createPlaylist(); closePlaylistMenu();"
                                 style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--text-color); font-size: 14px; cursor: pointer; text-align: left;">创建歌单</button>
-                            <button type="button" id="playlist-menu-manage" onclick="event.stopPropagation(); toggleEditMode(); closePlaylistMenu();"
-                                style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--danger-color, #ff4d4f); font-size: 14px; cursor: pointer; text-align: left;">管理</button>
+                            <button type="button" onclick="event.stopPropagation(); openPlaylistEditMode(); closePlaylistMenu();"
+                                style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--danger-color, #ff4d4f); font-size: 14px; cursor: pointer; text-align: left;">删除</button>
                         </div>
                     </div>
                 `;
@@ -484,7 +484,7 @@ function renderErrorState(container, message) {
 function renderMyPlaylists(playlists, container) {
     window._playlistListContainer = container; // 记录列表容器，动态榜单预取完成后刷新卡片状态用
     const selectedCount = selectedPlaylists.size;
-    // 普通模式：[管理]（「更新」按钮已随网络歌单定时刷新功能移除：动态歌单实时拉取，无需刷新）
+    // 普通模式：无工具条（创建歌单 / 删除 入口都在顶部「⋯」菜单）
     const normalBtns = '';
     // 创建歌单入口统一在顶部「⋯」菜单：内容区工具条不再显示该按钮
     const createBtn = '';
@@ -611,6 +611,14 @@ function toggleEditMode() {
     isReorderMode = isEditMode;
     selectedPlaylists.clear();
     loadMyPlaylists();
+}
+
+/**
+ * 进入歌单列表管理模式（页头「⋯」菜单的「删除」入口）。
+ * 模式内提供 全选 / 删除(N) / 完成，并可按住卡片拖动排序；已在模式中则不重复切换。
+ */
+function openPlaylistEditMode() {
+    if (!isEditMode) toggleEditMode();
 }
 
 // ==================== 管理模式：多选删除 ====================
@@ -1107,6 +1115,16 @@ function togglePlaylistDetailManageMode() {
     if (playlist) renderPlaylistDetailInContainer(playlist);
 }
 
+/**
+ * 进入歌单详情管理模式（页头「⋯」菜单的 下载 / 删除 共用入口）。
+ * 模式内提供 下载(N) / 删除(N) / 完成；已在模式中则不重复切换。
+ */
+function openPlaylistDetailManageMode() {
+    if (!playlistDetailManageMode) togglePlaylistDetailManageMode();
+}
+
+
+
 /** 多选模式：下载勾选的网络歌曲（未勾选 = 全部网络歌曲；本地歌曲跳过） */
 async function downloadPlaylistDetailSelected() {
     if (typeof SongTable === 'undefined') return;
@@ -1230,9 +1248,6 @@ function renderPlaylistDetail(playlist) {
         <div class="action-buttons" style="display: flex; gap: 8px; flex-wrap: wrap;">
             <button class="btn" onclick="playAllSongs()" ${!hasSongs ? 'disabled' : ''} style="display: flex; align-items: center; gap: 4px; padding: 3px 14px; border-radius: 16px; font-size: 12px; background: var(--surface-color); color: var(--text-color); border: 1px solid var(--border-color); cursor: pointer; opacity: ${!hasSongs ? '0.5' : '1'};">
                 <span style="display: flex; align-items: center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span> 播放
-            </button>
-            <button class="btn" onclick="addAllSongsToPlaylist()" ${!hasSongs ? 'disabled' : ''} style="display: flex; align-items: center; gap: 4px; padding: 3px 14px; border-radius: 16px; font-size: 12px; background: var(--surface-color); color: var(--text-color); border: 1px solid var(--border-color); cursor: pointer; opacity: ${!hasSongs ? '0.5' : '1'};">
-                <span style="display: flex; align-items: center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></span> 添加
             </button>
             <button class="btn" onclick="downloadAllSongs()" ${!hasSongs ? 'disabled' : ''} style="display: flex; align-items: center; gap: 4px; padding: 3px 14px; border-radius: 16px; font-size: 12px; background: var(--surface-color); color: var(--text-color); border: 1px solid var(--border-color); cursor: pointer; opacity: ${!hasSongs ? '0.5' : '1'};">
                 <span style="display: flex; align-items: center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg></span> 下载
@@ -1509,8 +1524,9 @@ function renderNewPlaylistTable(container, playlist, songs) {
         showHeader: false,
         actions: (() => {
             // 规则：
-            // - 网络动态歌单（sourceType）：只有「下载」按钮
-            // - 自建歌单：「下载」+「删除」
+            // - 普通模式按钮行只有「播放」（随机由 Hero 提供），其余功能全在页头「⋯」菜单：
+            //   自建歌单 = 下载 / 删除；网络动态歌单（sourceType）= 只有下载
+            //   （歌单内部不再出现「歌单」入口——本身已是歌单，无需再添加）
             // - 点「下载/删除」进入多选模式（出现勾选列）；下载跳过本地歌曲；删除 = 从歌单移除（不删文件）
             const manage = playlistDetailManageMode;
             const isDynamic = !!playlist.sourceType;
@@ -1528,15 +1544,10 @@ function renderNewPlaylistTable(container, playlist, songs) {
                     { id: 'manage-done', icon: '', text: '完成', primary: true, onClick: () => togglePlaylistDetailManageMode() }
                 ];
             }
+            // 普通模式按钮行只保留「播放」（随机按钮由 Hero 提供）；
+            // 「歌单 / 下载 / 删除」统一收进页头「⋯」菜单（一个功能一个入口）
             return [
-                ButtonActions.createPlayButtonWithUnifiedLogic({ pageId: 'playlist-detail', songs, disabled: !hasSongs }),
-                ...(!isDynamic ? [
-                    ButtonActions.createAddButtonWithUnifiedLogic({ pageId: 'playlist-detail', songs, sourceName: playlist.name, disabled: !hasSongs })
-                ] : []),
-                // 「删除」：点击进入多选模式（出现勾选列，勾选后批量执行；管理模式内仍有批量下载）
-                ...(!isDynamic ? [
-                    { id: 'delete-entry', icon: trashIcon, text: '删除', primary: false, disabled: !hasSongs, onClick: () => togglePlaylistDetailManageMode() }
-                ] : [])
+                ButtonActions.createPlayButtonWithUnifiedLogic({ pageId: 'playlist-detail', songs, disabled: !hasSongs })
             ];
         })(),
         events: {
@@ -1927,7 +1938,7 @@ async function showAddToPlaylistModal(songs, sourceName, cover) {
     modal.innerHTML = `
         <div class="modal-content" style="width: 400px; max-width: 90%; max-height: 80vh; background: var(--surface-color); border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
             <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--divider-color);">
-                <h3 class="modal-title" style="margin: 0; font-size: 16px; font-weight: 600;">添加到歌单 <span style="color: var(--text-tertiary); font-weight: 400;">(共 ${songs.length} 首)</span></h3>
+                <h3 class="modal-title" style="margin: 0; font-size: 16px; font-weight: 600;">歌单 <span style="color: var(--text-tertiary); font-weight: 400;">(共 ${songs.length} 首)</span></h3>
                 <button class="modal-close" onclick="closeAddToPlaylistModal()" style="width: 32px; height: 32px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">&times;</button>
             </div>
             <div class="modal-body" style="padding: 0; max-height: 50vh; overflow-y: auto;">
@@ -1957,7 +1968,7 @@ async function showAddToPlaylistModal(songs, sourceName, cover) {
             <div class="modal-footer" style="padding: 12px 20px; border-top: 1px solid var(--divider-color); display: flex; justify-content: flex-end;">
                 <button id="add-to-playlist-confirm" disabled
                     style="padding: 9px 22px; border: none; border-radius: 999px; background: var(--border-color); color: var(--text-tertiary); font-size: 14px; font-weight: 600; cursor: not-allowed;">
-                    添加到歌单
+                    歌单
                 </button>
             </div>
         </div>
@@ -2000,7 +2011,7 @@ async function showAddToPlaylistModal(songs, sourceName, cover) {
     const confirmBtn = modal.querySelector('#add-to-playlist-confirm');
     const syncConfirmBtn = () => {
         const picked = modal.querySelectorAll('.playlist-select-item.selected').length;
-        confirmBtn.textContent = picked ? `添加到 ${picked} 个歌单` : '添加到歌单';
+        confirmBtn.textContent = picked ? `歌单 (${picked})` : '歌单';
         confirmBtn.disabled = !picked;
         confirmBtn.style.background = picked ? 'var(--primary-color)' : 'var(--border-color)';
         confirmBtn.style.color = picked ? '#fff' : 'var(--text-tertiary)';
@@ -2483,16 +2494,7 @@ function togglePlaylistMenu() {
     const menu = document.getElementById('playlist-menu');
     if (!menu) return;
     const willOpen = menu.style.display !== 'block';
-    // 菜单项文字随管理模式切换
-    const manageBtn = document.getElementById('playlist-menu-manage');
-    if (manageBtn) {
-        manageBtn.textContent = (typeof isEditMode !== 'undefined' && isEditMode) ? '完成管理' : '管理';
-    }
-    // 排序模式的「完成」按钮在页面顶部提示条中，菜单里不再显示
-    const reorderBtn = document.getElementById('playlist-menu-reorder');
-    if (reorderBtn) {
-        reorderBtn.style.display = (typeof isReorderMode !== 'undefined' && isReorderMode) ? 'none' : 'flex';
-    }
+    // 菜单项为固定文案（创建歌单 / 删除），不随管理模式切换文字
     menu.style.display = willOpen ? 'block' : 'none';
     if (willOpen) {
         setTimeout(() => document.addEventListener('click', closePlaylistMenu), 0);
@@ -2550,8 +2552,11 @@ function setupPlaylistDetailHeader(playlist) {
         </button>
         <div id="playlist-detail-menu"
             style="display: none; position: absolute; right: 0; top: calc(100% + 6px); min-width: 150px; background: var(--surface-color); border: 1px solid var(--divider-color); border-radius: 10px; box-shadow: var(--shadow-lg); z-index: 1002; padding: 6px 0; overflow: hidden;">
-            <button type="button" onclick="event.stopPropagation(); closePlaylistDetailMenu(); togglePlaylistDetailManageMode();"
-                style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--text-color); font-size: 14px; cursor: pointer; text-align: left;">管理</button>
+            <button type="button" onclick="event.stopPropagation(); closePlaylistDetailMenu(); openPlaylistDetailManageMode();"
+                style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--text-color); font-size: 14px; cursor: pointer; text-align: left;">下载</button>
+            ${playlist.sourceType ? '' : `
+            <button type="button" onclick="event.stopPropagation(); closePlaylistDetailMenu(); openPlaylistDetailManageMode();"
+                style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border: none; background: transparent; color: var(--danger-color, #ff4d4f); font-size: 14px; cursor: pointer; text-align: left;">删除</button>`}
         </div>`;
     actions.appendChild(wrap);
 }

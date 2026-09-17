@@ -1,6 +1,6 @@
 {
   "name": "musichub-server",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "MusicHub Web Server - Unified Node.js Backend",
   "main": "server.js",
   "scripts": {
