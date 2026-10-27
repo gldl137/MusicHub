@@ -101,6 +101,9 @@ services:
 
 ## 🙏 致谢
 
+音源获取，请参考
+https://github.com/guoyue2010/lxmusic-
+
 本项目的诞生直接受益于以下两个项目，特此感谢：
 
 - **[MusicFree](https://github.com/maotoumao/MusicFree)** — MusicHub 的插件协议、插件运行引擎（`app/backend/MusicFree/`）与音源能力均改编自 MusicFree，并做了服务端化改造。没有它的插件生态，就没有 MusicHub 的网络音乐能力。
