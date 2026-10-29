@@ -1,0 +1,44 @@
+name: Manual Package Directory
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_dir:
+        description: '选择要打包的目录'
+        required: true
+        type: choice
+        options:
+          - radio
+          - dir2
+          - dir3
+          # 在这里继续添加你的其他目录名
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate directory exists
+        run: |
+          if [ ! -d "${{ inputs.target_dir }}" ]; then
+            echo "错误：目录 ${{ inputs.target_dir }} 不存在"
+            exit 1
+          fi
+
+      - name: Create zip
+        run: |
+          TIMESTAMP=$(date +'%Y%m%d-%H%M%S')
+          DIR="${{ inputs.target_dir }}"
+          zip -r "${DIR}-${TIMESTAMP}.zip" "${DIR}/"
+
+      - name: Upload as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-${{ inputs.target_dir }}
+          path: ${{ inputs.target_dir }}-*.zip
+          retention-days: 30
