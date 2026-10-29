@@ -9,9 +9,9 @@ on:
         type: choice
         options:
           - radio
-          - dir2
-          - dir3
-          # 在这里继续添加你的其他目录名
+          - radio-covers
+          - app
+          # 如果以后有其他目录，继续在这里添加
 
 permissions:
   contents: write
