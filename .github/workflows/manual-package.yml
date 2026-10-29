@@ -1,44 +1,49 @@
-name: Manual Package Directory
+name: Manual Package and Release
 
 on:
   workflow_dispatch:
     inputs:
-      target_dir:
-        description: '选择要打包的目录'
+      version:
+        description: '输入版本号 (例如: v1.0)'
         required: true
-        type: choice
-        options:
-          - radio
-          - radio-covers
-          - app
-          # 如果以后有其他目录，继续在这里添加
+        default: 'v1.0'
 
 permissions:
   contents: write
 
 jobs:
-  package:
+  package-and-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Validate directory exists
+      - name: Create Zip for images
         run: |
-          if [ ! -d "${{ inputs.target_dir }}" ]; then
-            echo "错误：目录 ${{ inputs.target_dir }} 不存在"
-            exit 1
-          fi
+          # 把根目录下的 radio-covers 文件夹打包成 zip
+          zip -r radio-covers.zip radio-covers/
 
-      - name: Create zip
-        run: |
-          TIMESTAMP=$(date +'%Y%m%d-%H%M%S')
-          DIR="${{ inputs.target_dir }}"
-          zip -r "${DIR}-${TIMESTAMP}.zip" "${DIR}/"
-
-      - name: Upload as artifact
-        uses: actions/upload-artifact@v4
+      - name: Create Release and Upload Assets
+        uses: softprops/action-gh-release@v2
         with:
-          name: package-${{ inputs.target_dir }}
-          path: ${{ inputs.target_dir }}-*.zip
-          retention-days: 30
+          tag_name: ${{ inputs.version }}
+          name: 电台 ${{ inputs.version }}
+          body: |
+            1. 电台封面
+            包含电台所需的封面图片资源。
+            👉 **请下载附件：** `radio-covers.zip`
+            注意：下载后请将文件放置到指定的目录中（如 `/app/data/cache/radio-covers`，请根据实际程序要求操作），系统将自动加载目录。
+
+            2. 电台地址
+            包含电台的配置文件/数据，导入后即可生成电台。
+            👉 **请下载附件：** `radio.m3u`
+
+            3. 套壳 APK
+            为您提供的安卓客户端安装包。
+            👉 **请下载附件：** `MusicHub.apk`
+          files: |
+            radio-covers.zip
+            radio/radio.m3u
+            apk/MusicHub.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
